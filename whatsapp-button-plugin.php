@@ -15,34 +15,52 @@ if (! defined('ABSPATH')) {
 }
 
 // Mostrar el botón de WhatsApp
+// Mostrar el botón de WhatsApp
 function whatsapp_button_display()
 {
     $phone_number = get_option('whatsapp_phone_number', '');
     if (! empty($phone_number)) {
+        // Obtener tipo de campo y opciones
+        $message_field_type = get_option('whatsapp_message_field_type', 'text');
+        $select_options_raw = get_option('whatsapp_select_options', '');
+        $select_options = array_map('trim', explode(',', $select_options_raw));
+
         echo '<div class="whatsapp-container">
         <a href="javascript:void(0)" class="whatsapp-button">
-        <img src="' . plugin_dir_url(__FILE__) . 'whatsapp-icon.png" alt="WhatsApp" />
+            <img src="' . plugin_dir_url(__FILE__) . 'whatsapp-icon.png" alt="WhatsApp" />
         </a>
         <div class="whatsapp-popup" style="display: none;">
         <form id="whatsapp-form">
         <h3>¡Hola! ¿Cómo podemos ayudarte?</h3>
         <p>Por favor, completa la información para iniciar la conversación:</p>
+
         <label for="whatsapp-name">Nombre:</label>
         <input type="text" id="whatsapp-name" name="name" required placeholder="Tu nombre" />
 
         <label for="whatsapp-email">Email:</label>
-        <input type="email" id="whatsapp-email" name="email" required placeholder="Tu email" />
+        <input type="email" id="whatsapp-email" name="email" required placeholder="Tu email" />';
 
-        <label for="whatsapp-message">Mensaje:</label>
-        <textarea id="whatsapp-message" name="message" required placeholder="Escribe tu mensaje"></textarea>
+        // Campo de mensaje dinámico
+        echo '<label for="whatsapp-message">Mensaje:</label>';
+        if ($message_field_type === 'select') {
+            echo '<select id="whatsapp-message" name="message" required>';
+            foreach ($select_options as $option) {
+                echo '<option value="' . esc_attr($option) . '">' . esc_html($option) . '</option>';
+            }
+            echo '</select>';
+        } else {
+            echo '<textarea id="whatsapp-message" name="message" required placeholder="Escribe tu mensaje"></textarea>';
+        }
 
-        <button type="submit">Iniciar Chat</button>
+        // Continuar con el formulario
+        echo '<button type="submit">Iniciar Chat</button>
         </form>
         </div>
         </div>';
     }
 }
 add_action('wp_footer', 'whatsapp_button_display');
+
 
 // Estilos Mejorados
 function whatsapp_button_styles()
@@ -119,6 +137,17 @@ function whatsapp_button_styles()
     .whatsapp-popup button:hover {
         background-color: #1EBE58;
     }
+
+    .whatsapp-popup select {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin: 0 auto 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    display: block;
+    box-sizing: border-box;
+    }
     </style>';
 }
 add_action('wp_head', 'whatsapp_button_styles');
@@ -136,7 +165,7 @@ function whatsapp_button_script()
             const whatsappPopup = document.querySelector(".whatsapp-popup");
             const whatsappForm = document.getElementById("whatsapp-form");
             const phoneNumber = "<?php echo get_option('whatsapp_phone_number', ''); ?>";
-            const customMessageTemplate = "<?php echo get_option('whatsapp_message_template', 'Hola, soy {name} y mi email es {email}. Estoy interesado en: {message}'); ?>";
+            const customMessageTemplate = "<?php echo get_option('whatsapp_message_template', 'Hola, soy {name} y mi email es {email}.  {message}'); ?>";
 
             if (!phoneNumber) {
                 console.error("Número de WhatsApp no configurado.");
@@ -226,7 +255,7 @@ function whatsapp_button_settings_page()
                 <tr valign="top">
                     <th scope="row">Plantilla del Mensaje</th>
                     <td>
-                        <textarea name="whatsapp_message_template" rows="4" style="width: 100%;"><?php echo esc_textarea(get_option('whatsapp_message_template', 'Hola, soy {name} y mi email es {email}. Estoy interesado en: {message}')); ?></textarea>
+                        <textarea name="whatsapp_message_template" rows="4" style="width: 100%;"><?php echo esc_textarea(get_option('whatsapp_message_template', 'Hola, soy {name} y mi email es {email}. {message}')); ?></textarea>
                         <p>Usa los marcadores: <code>{name}</code>, <code>{email}</code>, <code>{message}</code>.</p>
                     </td>
                 </tr>
@@ -238,9 +267,45 @@ function whatsapp_button_settings_page()
                         <p>Pega aquí tu código de seguimiento de eventos (Google Ads, Analytics, etc.).</p>
                     </td>
                 </tr>
+
+                <tr valign="top">
+                    <th scope="row">Tipo de campo para el mensaje</th>
+                    <td>
+                        <select name="whatsapp_message_field_type">
+                            <option value="text" <?php selected(get_option('whatsapp_message_field_type'), 'text'); ?>>Texto</option>
+                            <option value="select" <?php selected(get_option('whatsapp_message_field_type'), 'select'); ?>>Select</option>
+                        </select>
+                        <p>Selecciona si el campo de mensaje será un campo de texto o un menú desplegable (select).</p>
+                    </td>
+                </tr>
+
+                <tr valign="top" id="select-options-row" style="<?php echo (get_option('whatsapp_message_field_type') !== 'select') ? 'display:none;' : ''; ?>">
+                    <th scope="row">Opciones del Select</th>
+                    <td>
+                        <textarea name="whatsapp_select_options" rows="4" style="width: 100%;"><?php echo esc_textarea(get_option('whatsapp_select_options', 'Opción 1, Opción 2, Opción 3')); ?></textarea>
+                        <p>Escribe las opciones separadas por comas si el campo es un select.</p>
+                    </td>
+                </tr>
+
             </table>
             <?php submit_button(); ?>
         </form>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const fieldTypeSelect = document.querySelector('select[name="whatsapp_message_field_type"]');
+                const selectOptionsRow = document.getElementById('select-options-row');
+
+                if (fieldTypeSelect && selectOptionsRow) {
+                    fieldTypeSelect.addEventListener('change', function() {
+                        if (this.value === 'select') {
+                            selectOptionsRow.style.display = 'table-row';
+                        } else {
+                            selectOptionsRow.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        </script>
     </div>
 <?php
 }
@@ -252,5 +317,7 @@ function whatsapp_button_register_settings()
     register_setting('whatsapp-button-settings-group', 'whatsapp_phone_number');
     register_setting('whatsapp-button-settings-group', 'whatsapp_message_template');
     register_setting('whatsapp-button-settings-group', 'whatsapp_tracking_code');
+    register_setting('whatsapp-button-settings-group', 'whatsapp_message_field_type');
+    register_setting('whatsapp-button-settings-group', 'whatsapp_select_options');
 }
 add_action('admin_init', 'whatsapp_button_register_settings');
