@@ -15,7 +15,6 @@ if (! defined('ABSPATH')) {
 }
 
 // Mostrar el botón de WhatsApp
-// Mostrar el botón de WhatsApp
 function whatsapp_button_display()
 {
     $phone_number = get_option('whatsapp_phone_number', '');
@@ -213,6 +212,24 @@ function whatsapp_button_script()
                         })();
                 <?php endif; ?>
 
+                // Enviar el lead por AJAX antes de abrir WhatsApp
+                fetch('<?php echo plugin_dir_url(__FILE__); ?>lead-capture.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            name: name,
+                            email: email,
+                            message: message
+                        })
+                    }).then(response => response.json())
+                    .then(data => {
+                        console.log('Lead enviado:', data);
+                    }).catch(error => {
+                        console.error('Error al enviar lead:', error);
+                    });
+
 
                 window.open(whatsappURL, "_blank");
             });
@@ -287,6 +304,15 @@ function whatsapp_button_settings_page()
                     </td>
                 </tr>
 
+                <tr valign="top">
+                    <th scope="row">Correo para recibir leads</th>
+                    <td>
+                        <input type="email" name="whatsapp_lead_email" value="<?php echo esc_attr(get_option('whatsapp_lead_email', get_option('admin_email'))); ?>" style="width: 100%;" />
+                        <p>Este será el correo donde llegarán los leads incluso si el usuario no inicia el chat.</p>
+                    </td>
+                </tr>
+
+
             </table>
             <?php submit_button(); ?>
         </form>
@@ -315,6 +341,7 @@ function whatsapp_button_settings_page()
 function whatsapp_button_register_settings()
 {
     register_setting('whatsapp-button-settings-group', 'whatsapp_phone_number');
+    register_setting('whatsapp-button-settings-group', 'whatsapp_lead_email');
     register_setting('whatsapp-button-settings-group', 'whatsapp_message_template');
     register_setting('whatsapp-button-settings-group', 'whatsapp_tracking_code');
     register_setting('whatsapp-button-settings-group', 'whatsapp_message_field_type');
