@@ -3,7 +3,7 @@
 /**
  * Plugin Name: WhatsApp Button Plugin
  * Description: Muestra un botón de WhatsApp con formulario emergente y permite editar el mensaje predeterminado desde el administrador.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Author: BAV IT | BAV Publicidad
  * Author URI: https://bavpublicidad.com/bavit
  * License: GPL2
