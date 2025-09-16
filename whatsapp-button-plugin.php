@@ -3,7 +3,7 @@
 /**
  * Plugin Name: WhatsApp Button Plugin
  * Description: Muestra un botón de WhatsApp con formulario emergente y permite editar el mensaje predeterminado desde el administrador.
- * Version: 1.2.0
+ * Version: 1.2.1
  * Author: BAV IT | BAV Publicidad
  * Author URI: https://bavpublicidad.com/bavit
  * License: GPL2
@@ -164,7 +164,7 @@ function whatsapp_button_script()
             const whatsappPopup = document.querySelector(".whatsapp-popup");
             const whatsappForm = document.getElementById("whatsapp-form");
             const phoneNumber = "<?php echo get_option('whatsapp_phone_number', ''); ?>";
-            const customMessageTemplate = "<?php echo get_option('whatsapp_message_template', 'Hola, soy {name} y mi email es {email}.  {message}'); ?>";
+            const customMessageTemplate = "<?php echo get_option('whatsapp_message_template', 'Hola, soy {name} y mi email es {email}. Estoy interesado en: {message}'); ?>";
 
             if (!phoneNumber) {
                 console.error("Número de WhatsApp no configurado.");
@@ -212,6 +212,8 @@ function whatsapp_button_script()
                         })();
                 <?php endif; ?>
 
+                const urlActual = window.location.href;
+
                 // Enviar el lead por AJAX antes de abrir WhatsApp
                 fetch('<?php echo plugin_dir_url(__FILE__); ?>lead-capture.php', {
                         method: 'POST',
@@ -221,7 +223,8 @@ function whatsapp_button_script()
                         body: new URLSearchParams({
                             name: name,
                             email: email,
-                            message: message
+                            message: message,
+                            page_url: urlActual
                         })
                     }).then(response => response.json())
                     .then(data => {
@@ -272,7 +275,7 @@ function whatsapp_button_settings_page()
                 <tr valign="top">
                     <th scope="row">Plantilla del Mensaje</th>
                     <td>
-                        <textarea name="whatsapp_message_template" rows="4" style="width: 100%;"><?php echo esc_textarea(get_option('whatsapp_message_template', 'Hola, soy {name} y mi email es {email}. {message}')); ?></textarea>
+                        <textarea name="whatsapp_message_template" rows="4" style="width: 100%;"><?php echo esc_textarea(get_option('whatsapp_message_template', 'Hola, soy {name} y mi email es {email}. Estoy interesado en {message}')); ?></textarea>
                         <p>Usa los marcadores: <code>{name}</code>, <code>{email}</code>, <code>{message}</code>.</p>
                     </td>
                 </tr>

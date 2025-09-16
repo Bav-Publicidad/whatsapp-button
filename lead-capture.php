@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = sanitize_text_field($_POST['name']);
     $email = sanitize_email($_POST['email']);
     $message = sanitize_text_field($_POST['message']);
+    $url = sanitize_text_field($_POST['page_url']);
 
     // Obtener correo de destino desde las opciones del plugin
     $admin_email = get_option('whatsapp_lead_email');
@@ -18,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $subject = 'Nuevo formulario de WhatsApp completado';
-    $body = "Nombre: $name\nEmail: $email\nMensaje: $message\n.";
+    $body = "Nombre: $name\nEmail: $email\nMensaje: $message\n.Url: $url";
     $headers = ['Content-Type: text/plain; charset=UTF-8'];
 
     // Enviar correo
