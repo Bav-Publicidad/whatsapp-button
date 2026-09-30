@@ -4,6 +4,13 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
+// Opciones del select como array, sin entradas vacías
+function whatsapp_button_get_select_options()
+{
+    $raw = get_option('whatsapp_select_options', '');
+    return array_values(array_filter(array_map('trim', explode(',', $raw)), 'strlen'));
+}
+
 // Encolar estilos y scripts solo si hay un número configurado
 function whatsapp_button_enqueue_assets()
 {
@@ -18,7 +25,8 @@ function whatsapp_button_enqueue_assets()
     $config = [
         'phoneNumber'     => get_option('whatsapp_phone_number', ''),
         'messageTemplate' => get_option('whatsapp_message_template', WAB_DEFAULT_TEMPLATE),
-        'leadEndpoint'    => WAB_URL . 'lead-capture.php',
+        'ajaxUrl'         => admin_url('admin-ajax.php'),
+        'nonce'           => wp_create_nonce('wab_submit_lead'),
     ];
     wp_add_inline_script('whatsapp-button', 'window.wabConfig = ' . wp_json_encode($config) . ';', 'before');
 
@@ -45,8 +53,7 @@ function whatsapp_button_display()
 
     // Obtener tipo de campo y opciones
     $message_field_type = get_option('whatsapp_message_field_type', 'text');
-    $select_options_raw = get_option('whatsapp_select_options', '');
-    $select_options = array_map('trim', explode(',', $select_options_raw));
+    $select_options = whatsapp_button_get_select_options();
 ?>
     <div class="whatsapp-container">
         <a href="javascript:void(0)" class="whatsapp-button">
@@ -73,6 +80,12 @@ function whatsapp_button_display()
                 <?php else : ?>
                     <textarea id="whatsapp-message" name="message" required placeholder="Escribe tu mensaje"></textarea>
                 <?php endif; ?>
+
+                <!-- Honeypot anti-spam: oculto para humanos -->
+                <div class="wab-hp" aria-hidden="true">
+                    <label for="whatsapp-website">Website</label>
+                    <input type="text" id="whatsapp-website" name="website" tabindex="-1" autocomplete="off" />
+                </div>
 
                 <button type="submit">Iniciar Chat</button>
             </form>

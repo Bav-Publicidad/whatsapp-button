@@ -54,12 +54,15 @@ document.addEventListener("DOMContentLoaded", function () {
         const urlActual = window.location.href;
 
         // Enviar el lead por AJAX antes de abrir WhatsApp
-        fetch(config.leadEndpoint, {
+        fetch(config.ajaxUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
             },
             body: new URLSearchParams({
+                action: "wab_submit_lead",
+                nonce: config.nonce,
+                website: document.getElementById("whatsapp-website").value,
                 name: name,
                 email: email,
                 message: message,

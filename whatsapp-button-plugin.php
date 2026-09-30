@@ -20,6 +20,7 @@ define('WAB_URL', plugin_dir_url(__FILE__));
 define('WAB_DEFAULT_TEMPLATE', 'Hola, soy {name} y mi email es {email}. Estoy interesado en: {message}');
 
 require_once WAB_PATH . 'includes/frontend.php';
+require_once WAB_PATH . 'includes/ajax.php';
 
 if (is_admin()) {
     require_once WAB_PATH . 'includes/admin.php';

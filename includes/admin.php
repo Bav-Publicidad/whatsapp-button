@@ -31,7 +31,8 @@ function whatsapp_button_settings_page()
                 <tr valign="top">
                     <th scope="row">Número de WhatsApp</th>
                     <td>
-                        <input type="text" name="whatsapp_phone_number" value="<?php echo esc_attr(get_option('whatsapp_phone_number')); ?>" placeholder="1234567890" />
+                        <input type="text" name="whatsapp_phone_number" value="<?php echo esc_attr(get_option('whatsapp_phone_number')); ?>" placeholder="573001234567" />
+                        <p>Con código de país. Se eliminan automáticamente espacios, guiones y el signo +.</p>
                     </td>
                 </tr>
                 <tr valign="top">
@@ -105,11 +106,34 @@ function whatsapp_button_settings_page()
 // Registrar las opciones
 function whatsapp_button_register_settings()
 {
-    register_setting('whatsapp-button-settings-group', 'whatsapp_phone_number');
-    register_setting('whatsapp-button-settings-group', 'whatsapp_lead_email');
-    register_setting('whatsapp-button-settings-group', 'whatsapp_message_template');
-    register_setting('whatsapp-button-settings-group', 'whatsapp_tracking_code');
-    register_setting('whatsapp-button-settings-group', 'whatsapp_message_field_type');
-    register_setting('whatsapp-button-settings-group', 'whatsapp_select_options');
+    $group = 'whatsapp-button-settings-group';
+
+    register_setting($group, 'whatsapp_phone_number', ['sanitize_callback' => 'whatsapp_button_sanitize_phone']);
+    register_setting($group, 'whatsapp_lead_email', ['sanitize_callback' => 'whatsapp_button_sanitize_lead_email']);
+    register_setting($group, 'whatsapp_message_template', ['sanitize_callback' => 'sanitize_textarea_field']);
+    register_setting($group, 'whatsapp_tracking_code');
+    register_setting($group, 'whatsapp_message_field_type', ['sanitize_callback' => 'whatsapp_button_sanitize_field_type']);
+    register_setting($group, 'whatsapp_select_options', ['sanitize_callback' => 'sanitize_textarea_field']);
 }
 add_action('admin_init', 'whatsapp_button_register_settings');
+
+// wa.me solo acepta dígitos (código de país + número, sin "+", espacios ni guiones)
+function whatsapp_button_sanitize_phone($value)
+{
+    return preg_replace('/\D/', '', (string) $value);
+}
+
+function whatsapp_button_sanitize_lead_email($value)
+{
+    $email = sanitize_email($value);
+    if (trim((string) $value) !== '' && ! is_email($email)) {
+        add_settings_error('whatsapp_lead_email', 'invalid_email', 'El correo para recibir leads no es válido.');
+        return get_option('whatsapp_lead_email');
+    }
+    return $email;
+}
+
+function whatsapp_button_sanitize_field_type($value)
+{
+    return in_array($value, ['text', 'select'], true) ? $value : 'text';
+}
