@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const whatsappButton = document.querySelector(".whatsapp-button");
     const whatsappPopup = document.querySelector(".whatsapp-popup");
     const whatsappForm = document.getElementById("whatsapp-form");
+    const closeButton = document.querySelector(".whatsapp-close");
 
     if (!config.phoneNumber) {
         console.error("Número de WhatsApp no configurado.");
@@ -13,11 +14,33 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+    function openPopup() {
+        whatsappPopup.hidden = false;
+        whatsappButton.setAttribute("aria-expanded", "true");
+        document.getElementById("whatsapp-name").focus();
+    }
+
+    function closePopup() {
+        whatsappPopup.hidden = true;
+        whatsappButton.setAttribute("aria-expanded", "false");
+        whatsappButton.focus();
+    }
+
     whatsappButton.addEventListener("click", function () {
-        if (whatsappPopup.style.display === "none") {
-            whatsappPopup.style.display = "block";
+        if (whatsappPopup.hidden) {
+            openPopup();
         } else {
-            whatsappPopup.style.display = "none";
+            closePopup();
+        }
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener("click", closePopup);
+    }
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !whatsappPopup.hidden) {
+            closePopup();
         }
     });
 
@@ -40,9 +63,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const fullMessage = config.messageTemplate
-            .replace("{name}", name)
-            .replace("{email}", email)
-            .replace("{message}", message);
+            .replaceAll("{name}", name)
+            .replaceAll("{email}", email)
+            .replaceAll("{message}", message);
 
         const whatsappURL = `https://wa.me/${config.phoneNumber}?text=${encodeURIComponent(fullMessage)}`;
 
@@ -78,5 +101,8 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
         window.open(whatsappURL, "_blank");
+
+        whatsappForm.reset();
+        closePopup();
     });
 });

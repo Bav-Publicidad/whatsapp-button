@@ -56,29 +56,31 @@ function whatsapp_button_display()
     $select_options = whatsapp_button_get_select_options();
 ?>
     <div class="whatsapp-container">
-        <a href="javascript:void(0)" class="whatsapp-button">
-            <img src="<?php echo esc_url(WAB_URL . 'whatsapp-icon.png'); ?>" alt="WhatsApp" />
-        </a>
-        <div class="whatsapp-popup" style="display: none;">
+        <button type="button" class="whatsapp-button" aria-label="Abrir chat de WhatsApp" aria-expanded="false" aria-controls="whatsapp-popup">
+            <img src="<?php echo esc_url(WAB_URL . 'whatsapp-icon.png'); ?>" alt="" />
+        </button>
+        <div class="whatsapp-popup" id="whatsapp-popup" role="dialog" aria-labelledby="whatsapp-popup-title" hidden>
+            <button type="button" class="whatsapp-close" aria-label="Cerrar">&times;</button>
             <form id="whatsapp-form">
-                <h3>¡Hola! ¿Cómo podemos ayudarte?</h3>
+                <h3 id="whatsapp-popup-title">¡Hola! ¿Cómo podemos ayudarte?</h3>
                 <p>Por favor, completa la información para iniciar la conversación:</p>
 
                 <label for="whatsapp-name">Nombre:</label>
-                <input type="text" id="whatsapp-name" name="name" required placeholder="Tu nombre" />
+                <input type="text" id="whatsapp-name" name="name" required maxlength="100" autocomplete="name" placeholder="Tu nombre" />
 
                 <label for="whatsapp-email">Email:</label>
-                <input type="email" id="whatsapp-email" name="email" required placeholder="Tu email" />
+                <input type="email" id="whatsapp-email" name="email" required autocomplete="email" placeholder="Tu email" />
 
                 <label for="whatsapp-message">Mensaje:</label>
                 <?php if ($message_field_type === 'select') : ?>
                     <select id="whatsapp-message" name="message" required>
+                        <option value="" disabled selected>Selecciona una opción</option>
                         <?php foreach ($select_options as $option) : ?>
                             <option value="<?php echo esc_attr($option); ?>"><?php echo esc_html($option); ?></option>
                         <?php endforeach; ?>
                     </select>
                 <?php else : ?>
-                    <textarea id="whatsapp-message" name="message" required placeholder="Escribe tu mensaje"></textarea>
+                    <textarea id="whatsapp-message" name="message" required maxlength="1000" placeholder="Escribe tu mensaje"></textarea>
                 <?php endif; ?>
 
                 <!-- Honeypot anti-spam: oculto para humanos -->

@@ -5,15 +5,32 @@
     z-index: 1000;
 }
 
+/* Reset: evita que los estilos de <button> del tema afecten al icono */
+.whatsapp-button {
+    display: block;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+    cursor: pointer;
+    line-height: 0;
+}
+
 .whatsapp-button img {
     width: 80px;
     height: 80px;
-    cursor: pointer;
+}
+
+.whatsapp-button:focus-visible {
+    outline: 3px solid #25D366;
+    outline-offset: 3px;
+    border-radius: 50%;
 }
 
 .whatsapp-popup {
     position: fixed;
-    bottom: 80px;
+    bottom: 110px;
     right: 20px;
     background: #fff;
     border: 1px solid #ddd;
@@ -21,7 +38,35 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     padding: 20px;
     width: 300px;
+    max-width: calc(100vw - 40px);
+    max-height: calc(100vh - 130px);
+    overflow-y: auto;
+    box-sizing: border-box;
     z-index: 1001;
+}
+
+.whatsapp-popup[hidden] {
+    display: none;
+}
+
+.whatsapp-popup .whatsapp-close {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: auto;
+    padding: 4px 8px;
+    margin: 0;
+    border: 0;
+    background: none;
+    color: #888;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.whatsapp-popup .whatsapp-close:hover {
+    color: #333;
+    background: none;
 }
 
 .whatsapp-popup h3 {
@@ -48,9 +93,9 @@
 .whatsapp-popup input,
 .whatsapp-popup textarea,
 .whatsapp-popup select {
-    width: calc(100% - 20px);
+    width: 100%;
     padding: 10px;
-    margin: 0 auto 10px;
+    margin: 0 0 10px;
     border: 1px solid #ccc;
     border-radius: 8px;
     font-size: 14px;
@@ -63,8 +108,8 @@
     height: 80px;
 }
 
-.whatsapp-popup button {
-    width: calc(100% - 20px);
+.whatsapp-popup button[type="submit"] {
+    width: 100%;
     padding: 10px;
     background-color: #25D366;
     color: white;
@@ -73,10 +118,10 @@
     cursor: pointer;
     font-size: 16px;
     display: block;
-    margin: 0 auto;
+    margin: 0;
 }
 
-.whatsapp-popup button:hover {
+.whatsapp-popup button[type="submit"]:hover {
     background-color: #1EBE58;
 }
 
