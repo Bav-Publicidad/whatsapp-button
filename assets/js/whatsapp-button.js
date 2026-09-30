@@ -181,9 +181,11 @@ document.addEventListener("DOMContentLoaded", function () {
             page_title: document.title,
         });
 
-        // Enviar el lead por AJAX antes de abrir WhatsApp
+        // Enviar el lead por AJAX antes de abrir WhatsApp.
+        // keepalive: la petición termina aunque el navegador cambie a la app de WhatsApp.
         fetch(config.ajaxUrl, {
             method: "POST",
+            keepalive: true,
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
             },
