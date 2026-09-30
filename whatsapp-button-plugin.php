@@ -18,6 +18,8 @@ define('WAB_VERSION', '1.3.0');
 define('WAB_PATH', plugin_dir_path(__FILE__));
 define('WAB_URL', plugin_dir_url(__FILE__));
 define('WAB_DEFAULT_TEMPLATE', 'Hola, soy {name} y mi email es {email}. Estoy interesado en: {message}');
+define('WAB_DEFAULT_FORM_TITLE', '¡Hola! ¿Cómo podemos ayudarte?');
+define('WAB_DEFAULT_FORM_DESCRIPTION', 'Por favor, completa la información para iniciar la conversación:');
 define('WAB_DEFAULT_CONSENT_TEXT', 'Acepto el tratamiento de mis datos personales para ser contactado.');
 
 require_once WAB_PATH . 'includes/frontend.php';

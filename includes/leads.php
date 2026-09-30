@@ -76,10 +76,12 @@ add_action('init', 'whatsapp_button_register_lead_post_type');
 // Guardar un lead. Devuelve el ID del post o 0 si falla.
 function whatsapp_button_save_lead(array $lead)
 {
+    $contact = $lead['email'] !== '' ? $lead['email'] : $lead['phone'];
+
     $post_id = wp_insert_post([
         'post_type'   => WAB_LEAD_POST_TYPE,
         'post_status' => 'publish',
-        'post_title'  => sprintf('%s <%s>', $lead['name'], $lead['email']),
+        'post_title'  => $contact !== '' ? sprintf('%s <%s>', $lead['name'], $contact) : $lead['name'],
     ], true);
 
     if (is_wp_error($post_id)) {

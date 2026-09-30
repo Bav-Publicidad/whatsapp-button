@@ -11,6 +11,12 @@ function whatsapp_button_get_select_options()
     return array_values(array_filter(array_map('trim', explode(',', $raw)), 'strlen'));
 }
 
+// Campo email: activo por defecto
+function whatsapp_button_email_enabled()
+{
+    return get_option('whatsapp_show_email_field', '1') === '1';
+}
+
 // Casilla de consentimiento de datos: activa por defecto
 function whatsapp_button_consent_enabled()
 {
@@ -77,22 +83,31 @@ function whatsapp_button_display()
     // Obtener tipo de campo y opciones
     $message_field_type = get_option('whatsapp_message_field_type', 'text');
     $select_options = whatsapp_button_get_select_options();
+    $form_title = get_option('whatsapp_form_title', WAB_DEFAULT_FORM_TITLE);
+    $form_description = get_option('whatsapp_form_description', WAB_DEFAULT_FORM_DESCRIPTION);
+    $dialog_label = $form_title !== '' ? 'aria-labelledby="whatsapp-popup-title"' : 'aria-label="Formulario de WhatsApp"';
 ?>
     <div class="whatsapp-container">
         <button type="button" class="whatsapp-button" aria-label="Abrir chat de WhatsApp" aria-expanded="false" aria-controls="whatsapp-popup">
             <img src="<?php echo esc_url(WAB_URL . 'whatsapp-icon.png'); ?>" alt="" />
         </button>
-        <div class="whatsapp-popup" id="whatsapp-popup" role="dialog" aria-labelledby="whatsapp-popup-title" hidden>
+        <div class="whatsapp-popup" id="whatsapp-popup" role="dialog" <?php echo $dialog_label; ?> hidden>
             <button type="button" class="whatsapp-close" aria-label="Cerrar">&times;</button>
             <form id="whatsapp-form">
-                <h3 id="whatsapp-popup-title">¡Hola! ¿Cómo podemos ayudarte?</h3>
-                <p>Por favor, completa la información para iniciar la conversación:</p>
+                <?php if ($form_title !== '') : ?>
+                    <h3 id="whatsapp-popup-title"><?php echo esc_html($form_title); ?></h3>
+                <?php endif; ?>
+                <?php if ($form_description !== '') : ?>
+                    <p><?php echo nl2br(esc_html($form_description)); ?></p>
+                <?php endif; ?>
 
                 <label for="whatsapp-name">Nombre:</label>
                 <input type="text" id="whatsapp-name" name="name" required maxlength="100" autocomplete="name" placeholder="Tu nombre" />
 
-                <label for="whatsapp-email">Email:</label>
-                <input type="email" id="whatsapp-email" name="email" required autocomplete="email" placeholder="Tu email" />
+                <?php if (whatsapp_button_email_enabled()) : ?>
+                    <label for="whatsapp-email">Email:</label>
+                    <input type="email" id="whatsapp-email" name="email" required autocomplete="email" placeholder="Tu email" />
+                <?php endif; ?>
 
                 <?php if (get_option('whatsapp_show_phone_field')) : ?>
                     <label for="whatsapp-phone">Teléfono (opcional):</label>

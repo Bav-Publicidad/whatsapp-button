@@ -136,12 +136,13 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
 
         const name = document.getElementById("whatsapp-name").value.trim();
-        const email = document.getElementById("whatsapp-email").value.trim();
+        const emailField = document.getElementById("whatsapp-email");
+        const email = emailField ? emailField.value.trim() : "";
         const message = document.getElementById("whatsapp-message").value.trim();
         const phoneField = document.getElementById("whatsapp-phone");
         const phone = phoneField ? phoneField.value.trim() : "";
 
-        if (!name || !email || !message) {
+        if (!name || !message || (emailField && !email)) {
             alert("Por favor, completa todos los campos.");
             return;
         }
@@ -153,7 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailPattern.test(email)) {
+        if (emailField && !emailPattern.test(email)) {
             alert("Por favor, ingresa un correo electrónico válido.");
             return;
         }

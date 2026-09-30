@@ -18,8 +18,9 @@ Botón flotante de WhatsApp para WordPress con un formulario emergente que captu
 | Opción | Descripción |
 |---|---|
 | Número de WhatsApp | Con código de país, solo dígitos (por ejemplo `573001234567`). |
+| Título y descripción del formulario | Textos del encabezado del popup (vacíos = no se muestran). |
 | Plantilla del mensaje | Texto que se abre en WhatsApp. |
-| Campo teléfono | Muestra un campo de teléfono opcional. |
+| Campos del formulario | Pedir email (activo por defecto, obligatorio) y teléfono (desactivado por defecto, opcional). |
 | Tipo de campo / Opciones del select | Texto libre o lista de opciones separadas por comas. |
 | Consentimiento de datos | Activa la casilla, define su texto y la URL de la política. |
 | Correo para recibir leads | Si está vacío se usa el correo del administrador. |
