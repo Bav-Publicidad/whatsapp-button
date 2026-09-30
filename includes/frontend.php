@@ -81,6 +81,11 @@ function whatsapp_button_display()
                 <label for="whatsapp-email">Email:</label>
                 <input type="email" id="whatsapp-email" name="email" required autocomplete="email" placeholder="Tu email" />
 
+                <?php if (get_option('whatsapp_show_phone_field')) : ?>
+                    <label for="whatsapp-phone">Teléfono (opcional):</label>
+                    <input type="tel" id="whatsapp-phone" name="phone" maxlength="30" autocomplete="tel" placeholder="Tu teléfono" />
+                <?php endif; ?>
+
                 <label for="whatsapp-message">Mensaje:</label>
                 <?php if ($message_field_type === 'select') : ?>
                     <select id="whatsapp-message" name="message" required>

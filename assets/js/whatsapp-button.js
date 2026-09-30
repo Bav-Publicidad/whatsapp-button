@@ -1,5 +1,67 @@
+// Atribución: se guarda en sessionStorage porque el usuario puede llegar con
+// UTMs a una página y enviar el formulario desde otra.
+const WAB_ATTRIBUTION_KEY = "wab_attribution";
+const WAB_CAMPAIGN_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "fbclid", "msclkid"];
+
+function wabReadAttribution() {
+    try {
+        return JSON.parse(sessionStorage.getItem(WAB_ATTRIBUTION_KEY)) || {};
+    } catch (err) {
+        return {};
+    }
+}
+
+function wabExternalReferrer() {
+    try {
+        if (document.referrer && new URL(document.referrer).host !== window.location.host) {
+            return document.referrer;
+        }
+    } catch (err) {
+        // Referente mal formado: se ignora
+    }
+    return "";
+}
+
+function wabCaptureAttribution() {
+    const stored = wabReadAttribution();
+    const params = new URLSearchParams(window.location.search);
+    const campaign = {};
+
+    WAB_CAMPAIGN_PARAMS.forEach(function (key) {
+        const value = params.get(key);
+        if (value) {
+            campaign[key] = value;
+        }
+    });
+
+    // Primera página de la sesión: página de entrada y referente externo
+    let attribution = stored;
+    if (!stored.landing_page) {
+        attribution = {
+            landing_page: window.location.href,
+            referrer: wabExternalReferrer(),
+        };
+    }
+
+    // Una nueva campaña reemplaza a la anterior (último clic)
+    if (Object.keys(campaign).length) {
+        WAB_CAMPAIGN_PARAMS.forEach(function (key) {
+            delete attribution[key];
+        });
+        Object.assign(attribution, campaign);
+    }
+
+    try {
+        sessionStorage.setItem(WAB_ATTRIBUTION_KEY, JSON.stringify(attribution));
+    } catch (err) {
+        // Almacenamiento no disponible (modo privado, bloqueado): se sigue sin atribución guardada
+    }
+    return attribution;
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     const config = window.wabConfig || {};
+    const attribution = wabCaptureAttribution();
     const whatsappButton = document.querySelector(".whatsapp-button");
     const whatsappPopup = document.querySelector(".whatsapp-popup");
     const whatsappForm = document.getElementById("whatsapp-form");
@@ -76,6 +138,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const name = document.getElementById("whatsapp-name").value.trim();
         const email = document.getElementById("whatsapp-email").value.trim();
         const message = document.getElementById("whatsapp-message").value.trim();
+        const phoneField = document.getElementById("whatsapp-phone");
+        const phone = phoneField ? phoneField.value.trim() : "";
 
         if (!name || !email || !message) {
             alert("Por favor, completa todos los campos.");
@@ -91,13 +155,24 @@ document.addEventListener("DOMContentLoaded", function () {
         const fullMessage = config.messageTemplate
             .replaceAll("{name}", name)
             .replaceAll("{email}", email)
-            .replaceAll("{message}", message);
+            .replaceAll("{message}", message)
+            .replaceAll("{phone}", phone);
 
         const whatsappURL = `https://wa.me/${config.phoneNumber}?text=${encodeURIComponent(fullMessage)}`;
 
         trackLead(message);
 
-        const urlActual = window.location.href;
+        const payload = Object.assign({}, attribution, {
+            action: "wab_submit_lead",
+            nonce: config.nonce,
+            website: document.getElementById("whatsapp-website").value,
+            name: name,
+            email: email,
+            phone: phone,
+            message: message,
+            page_url: window.location.href,
+            page_title: document.title,
+        });
 
         // Enviar el lead por AJAX antes de abrir WhatsApp
         fetch(config.ajaxUrl, {
@@ -105,15 +180,7 @@ document.addEventListener("DOMContentLoaded", function () {
             headers: {
                 "Content-Type": "application/x-www-form-urlencoded",
             },
-            body: new URLSearchParams({
-                action: "wab_submit_lead",
-                nonce: config.nonce,
-                website: document.getElementById("whatsapp-website").value,
-                name: name,
-                email: email,
-                message: message,
-                page_url: urlActual,
-            }),
+            body: new URLSearchParams(payload),
         })
             .then((response) => response.json())
             .then((data) => {

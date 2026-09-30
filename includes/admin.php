@@ -39,7 +39,18 @@ function whatsapp_button_settings_page()
                     <th scope="row">Plantilla del Mensaje</th>
                     <td>
                         <textarea name="whatsapp_message_template" rows="4" style="width: 100%;"><?php echo esc_textarea(get_option('whatsapp_message_template', WAB_DEFAULT_TEMPLATE)); ?></textarea>
-                        <p>Usa los marcadores: <code>{name}</code>, <code>{email}</code>, <code>{message}</code>.</p>
+                        <p>Usa los marcadores: <code>{name}</code>, <code>{email}</code>, <code>{message}</code> y <code>{phone}</code> (si está activo el campo teléfono).</p>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <th scope="row">Campo teléfono</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="whatsapp_show_phone_field" value="1" <?php checked(get_option('whatsapp_show_phone_field'), '1'); ?> />
+                            Mostrar un campo de teléfono opcional en el formulario
+                        </label>
+                        <p>Útil para contactar al lead aunque no llegue a enviar el mensaje de WhatsApp.</p>
                     </td>
                 </tr>
 
@@ -128,6 +139,7 @@ function whatsapp_button_register_settings()
     register_setting($group, 'whatsapp_tracking_code', ['sanitize_callback' => 'whatsapp_button_sanitize_tracking_code']);
     register_setting($group, 'whatsapp_message_field_type', ['sanitize_callback' => 'whatsapp_button_sanitize_field_type']);
     register_setting($group, 'whatsapp_select_options', ['sanitize_callback' => 'sanitize_textarea_field']);
+    register_setting($group, 'whatsapp_show_phone_field', ['sanitize_callback' => 'whatsapp_button_sanitize_checkbox']);
 }
 add_action('admin_init', 'whatsapp_button_register_settings');
 
@@ -155,6 +167,11 @@ function whatsapp_button_sanitize_tracking_code($value)
         return get_option('whatsapp_tracking_code', '');
     }
     return whatsapp_button_strip_script_tags($value);
+}
+
+function whatsapp_button_sanitize_checkbox($value)
+{
+    return $value ? '1' : '';
 }
 
 function whatsapp_button_sanitize_field_type($value)
