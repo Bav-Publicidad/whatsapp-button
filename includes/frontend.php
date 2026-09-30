@@ -1,0 +1,83 @@
+<?php
+
+if (! defined('ABSPATH')) {
+    exit;
+}
+
+// Encolar estilos y scripts solo si hay un número configurado
+function whatsapp_button_enqueue_assets()
+{
+    if (empty(get_option('whatsapp_phone_number', ''))) {
+        return;
+    }
+
+    wp_enqueue_style('whatsapp-button', WAB_URL . 'assets/css/whatsapp-button.css', [], WAB_VERSION);
+    wp_enqueue_script('whatsapp-button', WAB_URL . 'assets/js/whatsapp-button.js', [], WAB_VERSION, true);
+
+    // Configuración para el JS (wp_json_encode evita romper el script con comillas o saltos de línea)
+    $config = [
+        'phoneNumber'     => get_option('whatsapp_phone_number', ''),
+        'messageTemplate' => get_option('whatsapp_message_template', WAB_DEFAULT_TEMPLATE),
+        'leadEndpoint'    => WAB_URL . 'lead-capture.php',
+    ];
+    wp_add_inline_script('whatsapp-button', 'window.wabConfig = ' . wp_json_encode($config) . ';', 'before');
+
+    // Código de seguimiento personalizado, aislado en una función con try/catch
+    // para que un error en él no impida enviar el lead ni abrir WhatsApp
+    $tracking_code = get_option('whatsapp_tracking_code', '');
+    if (! empty($tracking_code)) {
+        wp_add_inline_script(
+            'whatsapp-button',
+            "window.wabTrack = function() {\ntry {\n" . $tracking_code . "\n} catch (e) {\nconsole.error('Error en el código de seguimiento de WhatsApp:', e);\n}\n};",
+            'before'
+        );
+    }
+}
+add_action('wp_enqueue_scripts', 'whatsapp_button_enqueue_assets');
+
+// Mostrar el botón de WhatsApp
+function whatsapp_button_display()
+{
+    $phone_number = get_option('whatsapp_phone_number', '');
+    if (empty($phone_number)) {
+        return;
+    }
+
+    // Obtener tipo de campo y opciones
+    $message_field_type = get_option('whatsapp_message_field_type', 'text');
+    $select_options_raw = get_option('whatsapp_select_options', '');
+    $select_options = array_map('trim', explode(',', $select_options_raw));
+?>
+    <div class="whatsapp-container">
+        <a href="javascript:void(0)" class="whatsapp-button">
+            <img src="<?php echo esc_url(WAB_URL . 'whatsapp-icon.png'); ?>" alt="WhatsApp" />
+        </a>
+        <div class="whatsapp-popup" style="display: none;">
+            <form id="whatsapp-form">
+                <h3>¡Hola! ¿Cómo podemos ayudarte?</h3>
+                <p>Por favor, completa la información para iniciar la conversación:</p>
+
+                <label for="whatsapp-name">Nombre:</label>
+                <input type="text" id="whatsapp-name" name="name" required placeholder="Tu nombre" />
+
+                <label for="whatsapp-email">Email:</label>
+                <input type="email" id="whatsapp-email" name="email" required placeholder="Tu email" />
+
+                <label for="whatsapp-message">Mensaje:</label>
+                <?php if ($message_field_type === 'select') : ?>
+                    <select id="whatsapp-message" name="message" required>
+                        <?php foreach ($select_options as $option) : ?>
+                            <option value="<?php echo esc_attr($option); ?>"><?php echo esc_html($option); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php else : ?>
+                    <textarea id="whatsapp-message" name="message" required placeholder="Escribe tu mensaje"></textarea>
+                <?php endif; ?>
+
+                <button type="submit">Iniciar Chat</button>
+            </form>
+        </div>
+    </div>
+<?php
+}
+add_action('wp_footer', 'whatsapp_button_display');
