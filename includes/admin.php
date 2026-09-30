@@ -1,0 +1,199 @@
+<?php
+
+if (! defined('ABSPATH')) {
+    exit;
+}
+
+// Agregar opciones de configuración en el administrador
+function whatsapp_button_settings_menu()
+{
+    add_options_page(
+        'Configuración del Botón de WhatsApp',
+        'WhatsApp Button',
+        'manage_options',
+        'whatsapp-button-settings',
+        'whatsapp_button_settings_page'
+    );
+}
+add_action('admin_menu', 'whatsapp_button_settings_menu');
+
+function whatsapp_button_settings_page()
+{
+?>
+    <div class="wrap">
+        <h1>Configuración del Botón de WhatsApp</h1>
+        <form method="post" action="options.php">
+            <?php
+            settings_fields('whatsapp-button-settings-group');
+            do_settings_sections('whatsapp-button-settings-group');
+            ?>
+            <table class="form-table">
+                <tr valign="top">
+                    <th scope="row">Número de WhatsApp</th>
+                    <td>
+                        <input type="text" name="whatsapp_phone_number" value="<?php echo esc_attr(get_option('whatsapp_phone_number')); ?>" placeholder="573001234567" />
+                        <p>Con código de país. Se eliminan automáticamente espacios, guiones y el signo +.</p>
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">Plantilla del Mensaje</th>
+                    <td>
+                        <textarea name="whatsapp_message_template" rows="4" style="width: 100%;"><?php echo esc_textarea(get_option('whatsapp_message_template', WAB_DEFAULT_TEMPLATE)); ?></textarea>
+                        <p>Usa los marcadores: <code>{name}</code>, <code>{email}</code>, <code>{message}</code> y <code>{phone}</code> (si está activo el campo teléfono).</p>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <th scope="row">Campo teléfono</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="whatsapp_show_phone_field" value="1" <?php checked(get_option('whatsapp_show_phone_field'), '1'); ?> />
+                            Mostrar un campo de teléfono opcional en el formulario
+                        </label>
+                        <p>Útil para contactar al lead aunque no llegue a enviar el mensaje de WhatsApp.</p>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <th scope="row">Medición con Google Tag Manager</th>
+                    <td>
+                        <p>Cada lead válido envía al <code>dataLayer</code> el evento <code>whatsapp_lead</code> con:</p>
+                        <ul style="list-style: disc; margin-left: 20px;">
+                            <li><code>lead_source</code>: siempre <code>whatsapp_button</code></li>
+                            <li><code>lead_topic</code>: la opción elegida (solo si el mensaje es un select)</li>
+                            <li><code>page_location</code>: URL de la página</li>
+                        </ul>
+                        <p>En GTM crea un activador de tipo <strong>Evento personalizado</strong> con el nombre <code>whatsapp_lead</code> y úsalo en tus etiquetas de GA4, Google Ads, Meta, etc.</p>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <th scope="row">Código de Seguimiento (opcional)</th>
+                    <td>
+                        <textarea name="whatsapp_tracking_code" rows="6" style="width: 100%; font-family: monospace;" placeholder="gtag('event', 'conversion', { send_to: 'AW-XXXXXXX/XXXXXXX' });"><?php echo esc_textarea(get_option('whatsapp_tracking_code', '')); ?></textarea>
+                        <p><strong>Si usas Google Tag Manager, déjalo vacío</strong> y usa el evento <code>whatsapp_lead</code>.</p>
+                        <p>Para sitios sin GTM: JavaScript que se ejecuta con cada lead válido (las etiquetas <code>&lt;script&gt;</code> se quitan automáticamente). Los datos del evento están disponibles en la variable <code>data</code>.</p>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <th scope="row">Tipo de campo para el mensaje</th>
+                    <td>
+                        <select name="whatsapp_message_field_type">
+                            <option value="text" <?php selected(get_option('whatsapp_message_field_type'), 'text'); ?>>Texto</option>
+                            <option value="select" <?php selected(get_option('whatsapp_message_field_type'), 'select'); ?>>Select</option>
+                        </select>
+                        <p>Selecciona si el campo de mensaje será un campo de texto o un menú desplegable (select).</p>
+                    </td>
+                </tr>
+
+                <tr valign="top" id="select-options-row" style="<?php echo (get_option('whatsapp_message_field_type') !== 'select') ? 'display:none;' : ''; ?>">
+                    <th scope="row">Opciones del Select</th>
+                    <td>
+                        <textarea name="whatsapp_select_options" rows="4" style="width: 100%;"><?php echo esc_textarea(get_option('whatsapp_select_options', 'Opción 1, Opción 2, Opción 3')); ?></textarea>
+                        <p>Escribe las opciones separadas por comas si el campo es un select.</p>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <th scope="row">Consentimiento de datos</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="whatsapp_consent_enabled" value="1" <?php checked(whatsapp_button_consent_enabled()); ?> />
+                            Pedir aceptación del tratamiento de datos antes de enviar (recomendado)
+                        </label>
+                        <p style="margin-top: 10px;">Texto de la casilla:</p>
+                        <input type="text" name="whatsapp_consent_text" value="<?php echo esc_attr(get_option('whatsapp_consent_text', WAB_DEFAULT_CONSENT_TEXT)); ?>" style="width: 100%;" />
+                        <p style="margin-top: 10px;">URL de la política de privacidad:</p>
+                        <input type="url" name="whatsapp_privacy_url" value="<?php echo esc_attr(get_option('whatsapp_privacy_url', '')); ?>" placeholder="<?php echo esc_attr(get_privacy_policy_url()); ?>" style="width: 100%;" />
+                        <p>Si se deja vacío se usa la página de privacidad configurada en <em>Ajustes → Privacidad</em><?php echo get_privacy_policy_url() ? '' : ' (actualmente no hay ninguna, así que no se mostrará enlace)'; ?>.</p>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <th scope="row">Correo para recibir leads</th>
+                    <td>
+                        <input type="email" name="whatsapp_lead_email" value="<?php echo esc_attr(get_option('whatsapp_lead_email', get_option('admin_email'))); ?>" style="width: 100%;" />
+                        <p>Este será el correo donde llegarán los leads incluso si el usuario no inicia el chat.</p>
+                        <p>Todos los leads se guardan además en <a href="<?php echo esc_url(admin_url('edit.php?post_type=' . WAB_LEAD_POST_TYPE)); ?>">Leads WhatsApp</a>, aunque falle el envío del correo.</p>
+                    </td>
+                </tr>
+
+
+            </table>
+            <?php submit_button(); ?>
+        </form>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const fieldTypeSelect = document.querySelector('select[name="whatsapp_message_field_type"]');
+                const selectOptionsRow = document.getElementById('select-options-row');
+
+                if (fieldTypeSelect && selectOptionsRow) {
+                    fieldTypeSelect.addEventListener('change', function() {
+                        if (this.value === 'select') {
+                            selectOptionsRow.style.display = 'table-row';
+                        } else {
+                            selectOptionsRow.style.display = 'none';
+                        }
+                    });
+                }
+            });
+        </script>
+    </div>
+<?php
+}
+
+
+// Registrar las opciones
+function whatsapp_button_register_settings()
+{
+    $group = 'whatsapp-button-settings-group';
+
+    register_setting($group, 'whatsapp_phone_number', ['sanitize_callback' => 'whatsapp_button_sanitize_phone']);
+    register_setting($group, 'whatsapp_lead_email', ['sanitize_callback' => 'whatsapp_button_sanitize_lead_email']);
+    register_setting($group, 'whatsapp_message_template', ['sanitize_callback' => 'sanitize_textarea_field']);
+    register_setting($group, 'whatsapp_tracking_code', ['sanitize_callback' => 'whatsapp_button_sanitize_tracking_code']);
+    register_setting($group, 'whatsapp_message_field_type', ['sanitize_callback' => 'whatsapp_button_sanitize_field_type']);
+    register_setting($group, 'whatsapp_select_options', ['sanitize_callback' => 'sanitize_textarea_field']);
+    register_setting($group, 'whatsapp_show_phone_field', ['sanitize_callback' => 'whatsapp_button_sanitize_checkbox']);
+    register_setting($group, 'whatsapp_consent_enabled', ['sanitize_callback' => 'whatsapp_button_sanitize_checkbox']);
+    register_setting($group, 'whatsapp_consent_text', ['sanitize_callback' => 'sanitize_text_field']);
+    register_setting($group, 'whatsapp_privacy_url', ['sanitize_callback' => 'esc_url_raw']);
+}
+add_action('admin_init', 'whatsapp_button_register_settings');
+
+// wa.me solo acepta dígitos (código de país + número, sin "+", espacios ni guiones)
+function whatsapp_button_sanitize_phone($value)
+{
+    return preg_replace('/\D/', '', (string) $value);
+}
+
+function whatsapp_button_sanitize_lead_email($value)
+{
+    $email = sanitize_email($value);
+    if (trim((string) $value) !== '' && ! is_email($email)) {
+        add_settings_error('whatsapp_lead_email', 'invalid_email', 'El correo para recibir leads no es válido.');
+        return get_option('whatsapp_lead_email');
+    }
+    return $email;
+}
+
+// El código se ejecuta tal cual en el sitio: solo quien puede publicar HTML/JS sin filtrar
+// (administradores; en multisite, solo el superadmin) puede modificarlo.
+function whatsapp_button_sanitize_tracking_code($value)
+{
+    if (! current_user_can('unfiltered_html')) {
+        return get_option('whatsapp_tracking_code', '');
+    }
+    return whatsapp_button_strip_script_tags($value);
+}
+
+function whatsapp_button_sanitize_checkbox($value)
+{
+    return $value ? '1' : '';
+}
+
+function whatsapp_button_sanitize_field_type($value)
+{
+    return in_array($value, ['text', 'select'], true) ? $value : 'text';
+}
