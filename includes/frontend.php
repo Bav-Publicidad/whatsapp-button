@@ -11,6 +11,19 @@ function whatsapp_button_get_select_options()
     return array_values(array_filter(array_map('trim', explode(',', $raw)), 'strlen'));
 }
 
+// Casilla de consentimiento de datos: activa por defecto
+function whatsapp_button_consent_enabled()
+{
+    return get_option('whatsapp_consent_enabled', '1') === '1';
+}
+
+// URL de la política de privacidad: la configurada en el plugin o la de WordPress
+function whatsapp_button_privacy_url()
+{
+    $url = get_option('whatsapp_privacy_url', '');
+    return $url !== '' ? $url : get_privacy_policy_url();
+}
+
 // Quita las etiquetas <script> que suelen venir en los snippets de Google Ads, Meta, etc.
 // Dentro de un script en línea, un "</script>" cerraría el bloque y rompería el JS.
 function whatsapp_button_strip_script_tags($code)
@@ -96,6 +109,19 @@ function whatsapp_button_display()
                     </select>
                 <?php else : ?>
                     <textarea id="whatsapp-message" name="message" required maxlength="1000" placeholder="Escribe tu mensaje"></textarea>
+                <?php endif; ?>
+
+                <?php if (whatsapp_button_consent_enabled()) : ?>
+                    <label class="wab-consent" for="whatsapp-consent">
+                        <input type="checkbox" id="whatsapp-consent" name="consent" value="1" required />
+                        <span>
+                            <?php echo esc_html(get_option('whatsapp_consent_text', WAB_DEFAULT_CONSENT_TEXT)); ?>
+                            <?php $privacy_url = whatsapp_button_privacy_url(); ?>
+                            <?php if ($privacy_url) : ?>
+                                <a href="<?php echo esc_url($privacy_url); ?>" target="_blank" rel="noopener noreferrer">Ver política</a>
+                            <?php endif; ?>
+                        </span>
+                    </label>
                 <?php endif; ?>
 
                 <!-- Honeypot anti-spam: oculto para humanos -->

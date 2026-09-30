@@ -96,6 +96,21 @@ function whatsapp_button_settings_page()
                 </tr>
 
                 <tr valign="top">
+                    <th scope="row">Consentimiento de datos</th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="whatsapp_consent_enabled" value="1" <?php checked(whatsapp_button_consent_enabled()); ?> />
+                            Pedir aceptación del tratamiento de datos antes de enviar (recomendado)
+                        </label>
+                        <p style="margin-top: 10px;">Texto de la casilla:</p>
+                        <input type="text" name="whatsapp_consent_text" value="<?php echo esc_attr(get_option('whatsapp_consent_text', WAB_DEFAULT_CONSENT_TEXT)); ?>" style="width: 100%;" />
+                        <p style="margin-top: 10px;">URL de la política de privacidad:</p>
+                        <input type="url" name="whatsapp_privacy_url" value="<?php echo esc_attr(get_option('whatsapp_privacy_url', '')); ?>" placeholder="<?php echo esc_attr(get_privacy_policy_url()); ?>" style="width: 100%;" />
+                        <p>Si se deja vacío se usa la página de privacidad configurada en <em>Ajustes → Privacidad</em><?php echo get_privacy_policy_url() ? '' : ' (actualmente no hay ninguna, así que no se mostrará enlace)'; ?>.</p>
+                    </td>
+                </tr>
+
+                <tr valign="top">
                     <th scope="row">Correo para recibir leads</th>
                     <td>
                         <input type="email" name="whatsapp_lead_email" value="<?php echo esc_attr(get_option('whatsapp_lead_email', get_option('admin_email'))); ?>" style="width: 100%;" />
@@ -141,6 +156,9 @@ function whatsapp_button_register_settings()
     register_setting($group, 'whatsapp_message_field_type', ['sanitize_callback' => 'whatsapp_button_sanitize_field_type']);
     register_setting($group, 'whatsapp_select_options', ['sanitize_callback' => 'sanitize_textarea_field']);
     register_setting($group, 'whatsapp_show_phone_field', ['sanitize_callback' => 'whatsapp_button_sanitize_checkbox']);
+    register_setting($group, 'whatsapp_consent_enabled', ['sanitize_callback' => 'whatsapp_button_sanitize_checkbox']);
+    register_setting($group, 'whatsapp_consent_text', ['sanitize_callback' => 'sanitize_text_field']);
+    register_setting($group, 'whatsapp_privacy_url', ['sanitize_callback' => 'esc_url_raw']);
 }
 add_action('admin_init', 'whatsapp_button_register_settings');
 

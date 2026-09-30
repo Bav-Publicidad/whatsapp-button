@@ -146,6 +146,12 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        const consentField = document.getElementById("whatsapp-consent");
+        if (consentField && !consentField.checked) {
+            alert("Debes aceptar el tratamiento de datos para continuar.");
+            return;
+        }
+
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailPattern.test(email)) {
             alert("Por favor, ingresa un correo electrónico válido.");
@@ -170,6 +176,7 @@ document.addEventListener("DOMContentLoaded", function () {
             email: email,
             phone: phone,
             message: message,
+            consent: consentField && consentField.checked ? "1" : "",
             page_url: window.location.href,
             page_title: document.title,
         });

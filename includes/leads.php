@@ -27,6 +27,7 @@ function whatsapp_button_lead_fields()
         'fbclid'       => 'fbclid',
         'msclkid'      => 'msclkid',
         'device'       => 'Dispositivo',
+        'consent'      => 'Aceptó tratamiento de datos',
         'mail_sent'    => 'Correo enviado',
     ];
 }

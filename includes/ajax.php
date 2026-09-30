@@ -36,6 +36,10 @@ function whatsapp_button_handle_lead()
         wp_send_json_error(['error' => 'Opción no válida.'], 400);
     }
 
+    if (whatsapp_button_consent_enabled() && $lead['consent'] !== 'Sí') {
+        wp_send_json_error(['error' => 'Debes aceptar el tratamiento de datos.'], 400);
+    }
+
     // Se guarda primero en la BD: si el correo falla, el lead no se pierde
     $lead_id   = whatsapp_button_save_lead($lead);
     $mail_sent = whatsapp_button_send_lead_email($lead);
@@ -78,6 +82,7 @@ function whatsapp_button_get_posted_lead()
         'gclid'        => $text('gclid'),
         'fbclid'       => $text('fbclid'),
         'msclkid'      => $text('msclkid'),
+        'consent'      => isset($_POST['consent']) && $_POST['consent'] === '1' ? 'Sí' : '',
         'device'       => wp_is_mobile() ? 'Móvil' : 'Escritorio',
         'date'         => wp_date('Y-m-d H:i'),
     ];
@@ -134,6 +139,9 @@ function whatsapp_button_send_lead_email(array $lead)
     $lines[] = '=== OTROS ===';
     $lines[] = 'Fecha: ' . $lead['date'];
     $lines[] = 'Dispositivo: ' . $lead['device'];
+    if ($lead['consent'] !== '') {
+        $lines[] = 'Aceptó tratamiento de datos: ' . $lead['consent'];
+    }
     $lines[] = 'Sitio: ' . home_url();
 
     // Reply-To: responder al correo le escribe directamente al lead.

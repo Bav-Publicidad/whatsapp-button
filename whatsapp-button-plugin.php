@@ -18,6 +18,7 @@ define('WAB_VERSION', '1.2.1');
 define('WAB_PATH', plugin_dir_path(__FILE__));
 define('WAB_URL', plugin_dir_url(__FILE__));
 define('WAB_DEFAULT_TEMPLATE', 'Hola, soy {name} y mi email es {email}. Estoy interesado en: {message}');
+define('WAB_DEFAULT_CONSENT_TEXT', 'Acepto el tratamiento de mis datos personales para ser contactado.');
 
 require_once WAB_PATH . 'includes/frontend.php';
 require_once WAB_PATH . 'includes/leads.php';

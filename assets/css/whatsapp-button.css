@@ -108,6 +108,28 @@
     height: 80px;
 }
 
+.whatsapp-popup .wab-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0 0 12px;
+    font-size: 12px;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.whatsapp-popup .wab-consent input {
+    width: auto;
+    margin: 2px 0 0;
+    padding: 0;
+    flex-shrink: 0;
+}
+
+.whatsapp-popup .wab-consent a {
+    color: #128C7E;
+    text-decoration: underline;
+}
+
 .whatsapp-popup button[type="submit"] {
     width: 100%;
     padding: 10px;
