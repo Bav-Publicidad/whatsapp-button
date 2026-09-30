@@ -1,13 +1,16 @@
 <?php
 
 /**
- * Plugin Name: WhatsApp Button Plugin
- * Description: Botón flotante de WhatsApp con formulario de captura de leads: envío por correo, registro en la base de datos y evento para Google Tag Manager.
- * Version: 1.3.0
- * Author: BAV IT | BAV Publicidad
- * Author URI: https://bavpublicidad.com/bavit
- * License: GPL2
- * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Plugin Name:       Chat Lead Button – Lead capture for WhatsApp
+ * Description:       Botón flotante de chat con formulario de captura de leads: envío por correo, registro en la base de datos y evento para Google Tag Manager.
+ * Version:           1.3.0
+ * Requires at least: 5.8
+ * Requires PHP:      7.4
+ * Author:            BAV IT | BAV Publicidad
+ * Author URI:        https://bavpublicidad.com/bavit
+ * License:           GPL v2 or later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       chat-lead-button
  */
 
 if (! defined('ABSPATH')) {

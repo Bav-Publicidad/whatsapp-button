@@ -1,4 +1,4 @@
-# WhatsApp Button Plugin
+# Chat Lead Button – Lead capture for WhatsApp
 
 Botón flotante de WhatsApp para WordPress con un formulario emergente que captura el lead (nombre, email, mensaje y, opcionalmente, teléfono) antes de abrir la conversación.
 
