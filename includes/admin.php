@@ -44,10 +44,24 @@ function whatsapp_button_settings_page()
                 </tr>
 
                 <tr valign="top">
-                    <th scope="row">Código de Seguimiento</th>
+                    <th scope="row">Medición con Google Tag Manager</th>
                     <td>
-                        <textarea name="whatsapp_tracking_code" rows="6" style="width: 100%;"><?php echo esc_textarea(get_option('whatsapp_tracking_code', '')); ?></textarea>
-                        <p>Pega aquí tu código de seguimiento de eventos (Google Ads, Analytics, etc.).</p>
+                        <p>Cada lead válido envía al <code>dataLayer</code> el evento <code>whatsapp_lead</code> con:</p>
+                        <ul style="list-style: disc; margin-left: 20px;">
+                            <li><code>lead_source</code>: siempre <code>whatsapp_button</code></li>
+                            <li><code>lead_topic</code>: la opción elegida (solo si el mensaje es un select)</li>
+                            <li><code>page_location</code>: URL de la página</li>
+                        </ul>
+                        <p>En GTM crea un activador de tipo <strong>Evento personalizado</strong> con el nombre <code>whatsapp_lead</code> y úsalo en tus etiquetas de GA4, Google Ads, Meta, etc.</p>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <th scope="row">Código de Seguimiento (opcional)</th>
+                    <td>
+                        <textarea name="whatsapp_tracking_code" rows="6" style="width: 100%; font-family: monospace;" placeholder="gtag('event', 'conversion', { send_to: 'AW-XXXXXXX/XXXXXXX' });"><?php echo esc_textarea(get_option('whatsapp_tracking_code', '')); ?></textarea>
+                        <p><strong>Si usas Google Tag Manager, déjalo vacío</strong> y usa el evento <code>whatsapp_lead</code>.</p>
+                        <p>Para sitios sin GTM: JavaScript que se ejecuta con cada lead válido (las etiquetas <code>&lt;script&gt;</code> se quitan automáticamente). Los datos del evento están disponibles en la variable <code>data</code>.</p>
                     </td>
                 </tr>
 
@@ -111,7 +125,7 @@ function whatsapp_button_register_settings()
     register_setting($group, 'whatsapp_phone_number', ['sanitize_callback' => 'whatsapp_button_sanitize_phone']);
     register_setting($group, 'whatsapp_lead_email', ['sanitize_callback' => 'whatsapp_button_sanitize_lead_email']);
     register_setting($group, 'whatsapp_message_template', ['sanitize_callback' => 'sanitize_textarea_field']);
-    register_setting($group, 'whatsapp_tracking_code');
+    register_setting($group, 'whatsapp_tracking_code', ['sanitize_callback' => 'whatsapp_button_sanitize_tracking_code']);
     register_setting($group, 'whatsapp_message_field_type', ['sanitize_callback' => 'whatsapp_button_sanitize_field_type']);
     register_setting($group, 'whatsapp_select_options', ['sanitize_callback' => 'sanitize_textarea_field']);
 }
@@ -131,6 +145,16 @@ function whatsapp_button_sanitize_lead_email($value)
         return get_option('whatsapp_lead_email');
     }
     return $email;
+}
+
+// El código se ejecuta tal cual en el sitio: solo quien puede publicar HTML/JS sin filtrar
+// (administradores; en multisite, solo el superadmin) puede modificarlo.
+function whatsapp_button_sanitize_tracking_code($value)
+{
+    if (! current_user_can('unfiltered_html')) {
+        return get_option('whatsapp_tracking_code', '');
+    }
+    return whatsapp_button_strip_script_tags($value);
 }
 
 function whatsapp_button_sanitize_field_type($value)

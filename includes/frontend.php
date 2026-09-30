@@ -11,6 +11,13 @@ function whatsapp_button_get_select_options()
     return array_values(array_filter(array_map('trim', explode(',', $raw)), 'strlen'));
 }
 
+// Quita las etiquetas <script> que suelen venir en los snippets de Google Ads, Meta, etc.
+// Dentro de un script en línea, un "</script>" cerraría el bloque y rompería el JS.
+function whatsapp_button_strip_script_tags($code)
+{
+    return trim(preg_replace('#</?script\b[^>]*>#i', '', (string) $code));
+}
+
 // Encolar estilos y scripts solo si hay un número configurado
 function whatsapp_button_enqueue_assets()
 {
@@ -25,6 +32,7 @@ function whatsapp_button_enqueue_assets()
     $config = [
         'phoneNumber'     => get_option('whatsapp_phone_number', ''),
         'messageTemplate' => get_option('whatsapp_message_template', WAB_DEFAULT_TEMPLATE),
+        'fieldType'       => get_option('whatsapp_message_field_type', 'text'),
         'ajaxUrl'         => admin_url('admin-ajax.php'),
         'nonce'           => wp_create_nonce('wab_submit_lead'),
     ];
@@ -32,11 +40,13 @@ function whatsapp_button_enqueue_assets()
 
     // Código de seguimiento personalizado, aislado en una función con try/catch
     // para que un error en él no impida enviar el lead ni abrir WhatsApp
-    $tracking_code = get_option('whatsapp_tracking_code', '');
+    // (recibe los datos del evento como `data`). Se quitan etiquetas <script>
+    // por si se guardaron antes de existir la sanitización.
+    $tracking_code = whatsapp_button_strip_script_tags(get_option('whatsapp_tracking_code', ''));
     if (! empty($tracking_code)) {
         wp_add_inline_script(
             'whatsapp-button',
-            "window.wabTrack = function() {\ntry {\n" . $tracking_code . "\n} catch (e) {\nconsole.error('Error en el código de seguimiento de WhatsApp:', e);\n}\n};",
+            "window.wabTrack = function(data) {\ntry {\n" . $tracking_code . "\n} catch (e) {\nconsole.error('Error en el código de seguimiento de WhatsApp:', e);\n}\n};",
             'before'
         );
     }

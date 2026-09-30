@@ -26,6 +26,32 @@ document.addEventListener("DOMContentLoaded", function () {
         whatsappButton.focus();
     }
 
+    // Medición del lead. Nunca se envían nombre ni email (GA4 prohíbe datos personales);
+    // el mensaje solo se incluye si viene de un select, porque el texto libre puede contenerlos.
+    function trackLead(message) {
+        const eventData = {
+            event: "whatsapp_lead",
+            lead_source: "whatsapp_button",
+            page_location: window.location.href,
+        };
+        if (config.fieldType === "select") {
+            eventData.lead_topic = message;
+        }
+
+        try {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push(eventData);
+            document.dispatchEvent(new CustomEvent("wab:lead", { detail: eventData }));
+        } catch (err) {
+            console.error("Error al registrar el evento de WhatsApp:", err);
+        }
+
+        // Código de seguimiento personalizado (opcional, configurado en el admin)
+        if (typeof window.wabTrack === "function") {
+            window.wabTrack(eventData);
+        }
+    }
+
     whatsappButton.addEventListener("click", function () {
         if (whatsappPopup.hidden) {
             openPopup();
@@ -69,10 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const whatsappURL = `https://wa.me/${config.phoneNumber}?text=${encodeURIComponent(fullMessage)}`;
 
-        // Código de seguimiento
-        if (typeof window.wabTrack === "function") {
-            window.wabTrack();
-        }
+        trackLead(message);
 
         const urlActual = window.location.href;
 
