@@ -24,10 +24,21 @@ function whatsapp_button_handle_lead()
         wp_send_json_error(['error' => 'Demasiados envíos. Inténtalo de nuevo en unos minutos.'], 429);
     }
 
-    $lead = whatsapp_button_get_posted_lead();
+    // Nonce ya verificado arriba; cada campo se sanitiza en whatsapp_button_sanitize_lead().
+    // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+    $lead = whatsapp_button_sanitize_lead(wp_unslash($_POST));
 
-    if ($lead['name'] === '' || $lead['message'] === '' || ! is_email($lead['email'])) {
-        wp_send_json_error(['error' => 'Datos incompletos o email no válido.'], 400);
+    if ($lead['name'] === '' || $lead['message'] === '') {
+        wp_send_json_error(['error' => 'Datos incompletos.'], 400);
+    }
+
+    // El email solo es obligatorio si el campo está activo en los ajustes
+    if (whatsapp_button_email_enabled()) {
+        if (! is_email($lead['email'])) {
+            wp_send_json_error(['error' => 'Email no válido.'], 400);
+        }
+    } else {
+        $lead['email'] = '';
     }
 
     // Si el mensaje es un select, solo se aceptan las opciones configuradas
@@ -55,21 +66,24 @@ function whatsapp_button_handle_lead()
     wp_send_json_success(['saved' => (bool) $lead_id, 'mail_sent' => $mail_sent]);
 }
 
-// Leer y sanitizar los datos enviados por el formulario
-function whatsapp_button_get_posted_lead()
+// Sanitizar los datos enviados por el formulario (ya sin barras: wp_unslash)
+function whatsapp_button_sanitize_lead(array $data)
 {
-    $text = function ($key, $max = 200) {
-        return isset($_POST[$key]) ? mb_substr(sanitize_text_field(wp_unslash($_POST[$key])), 0, $max) : '';
+    $raw = function ($key) use ($data) {
+        return isset($data[$key]) && is_string($data[$key]) ? $data[$key] : '';
     };
-    $url = function ($key) {
-        return isset($_POST[$key]) ? esc_url_raw(wp_unslash($_POST[$key])) : '';
+    $text = function ($key, $max = 200) use ($raw) {
+        return mb_substr(sanitize_text_field($raw($key)), 0, $max);
+    };
+    $url = function ($key) use ($raw) {
+        return esc_url_raw($raw($key));
     };
 
     return [
         'name'         => $text('name', 100),
-        'email'        => isset($_POST['email']) ? sanitize_email(wp_unslash($_POST['email'])) : '',
+        'email'        => sanitize_email($raw('email')),
         'phone'        => $text('phone', 30),
-        'message'      => isset($_POST['message']) ? mb_substr(sanitize_textarea_field(wp_unslash($_POST['message'])), 0, 1000) : '',
+        'message'      => mb_substr(sanitize_textarea_field($raw('message')), 0, 1000),
         'page_url'     => $url('page_url'),
         'page_title'   => $text('page_title'),
         'landing_page' => $url('landing_page'),
@@ -82,7 +96,7 @@ function whatsapp_button_get_posted_lead()
         'gclid'        => $text('gclid'),
         'fbclid'       => $text('fbclid'),
         'msclkid'      => $text('msclkid'),
-        'consent'      => isset($_POST['consent']) && $_POST['consent'] === '1' ? 'Sí' : '',
+        'consent'      => $raw('consent') === '1' ? 'Sí' : '',
         'device'       => wp_is_mobile() ? 'Móvil' : 'Escritorio',
         'date'         => wp_date('Y-m-d H:i'),
     ];
@@ -103,8 +117,10 @@ function whatsapp_button_send_lead_email(array $lead)
     $lines = [
         '=== DATOS DEL CONTACTO ===',
         'Nombre: ' . $lead['name'],
-        'Email: ' . $lead['email'],
     ];
+    if ($lead['email'] !== '') {
+        $lines[] = 'Email: ' . $lead['email'];
+    }
     if ($lead['phone'] !== '') {
         $lines[] = 'Teléfono: ' . $lead['phone'];
     }
@@ -144,13 +160,14 @@ function whatsapp_button_send_lead_email(array $lead)
     }
     $lines[] = 'Sitio: ' . home_url();
 
+    $headers = ['Content-Type: text/plain; charset=UTF-8'];
+
     // Reply-To: responder al correo le escribe directamente al lead.
     // Se quitan caracteres que podrían alterar la cabecera.
-    $reply_name = trim(str_replace(['"', '<', '>', ',', ';', "\r", "\n"], '', $lead['name']));
-    $headers    = [
-        'Content-Type: text/plain; charset=UTF-8',
-        sprintf('Reply-To: "%s" <%s>', $reply_name, $lead['email']),
-    ];
+    if ($lead['email'] !== '') {
+        $reply_name = trim(str_replace(['"', '<', '>', ',', ';', "\r", "\n"], '', $lead['name']));
+        $headers[]  = sprintf('Reply-To: "%s" <%s>', $reply_name, $lead['email']);
+    }
 
     return wp_mail($admin_email, $subject, implode("\n", $lines), $headers);
 }

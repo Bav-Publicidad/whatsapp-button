@@ -76,10 +76,12 @@ add_action('init', 'whatsapp_button_register_lead_post_type');
 // Guardar un lead. Devuelve el ID del post o 0 si falla.
 function whatsapp_button_save_lead(array $lead)
 {
+    $contact = $lead['email'] !== '' ? $lead['email'] : $lead['phone'];
+
     $post_id = wp_insert_post([
         'post_type'   => WAB_LEAD_POST_TYPE,
         'post_status' => 'publish',
-        'post_title'  => sprintf('%s <%s>', $lead['name'], $lead['email']),
+        'post_title'  => $contact !== '' ? sprintf('%s <%s>', $lead['name'], $contact) : $lead['name'],
     ], true);
 
     if (is_wp_error($post_id)) {
@@ -180,10 +182,12 @@ function whatsapp_button_lead_search($search, $query)
         return $search;
     }
 
-    $like = '%' . $wpdb->esc_like($query->get('s')) . '%';
+    $like     = '%' . $wpdb->esc_like($query->get('s')) . '%';
+    $meta_key = $wpdb->esc_like('_wab_') . '%';
     return $wpdb->prepare(
-        " AND ({$wpdb->posts}.post_title LIKE %s OR {$wpdb->posts}.ID IN (SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key LIKE '\\_wab\\_%%' AND meta_value LIKE %s))",
+        " AND ({$wpdb->posts}.post_title LIKE %s OR {$wpdb->posts}.ID IN (SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key LIKE %s AND meta_value LIKE %s))",
         $like,
+        $meta_key,
         $like
     );
 }
@@ -261,8 +265,11 @@ function whatsapp_button_export_leads()
     header('Content-Type: text/csv; charset=UTF-8');
     header('Content-Disposition: attachment; filename="leads-whatsapp-' . wp_date('Y-m-d') . '.csv"');
 
+    echo "\xEF\xBB\xBF"; // BOM para que Excel reconozca UTF-8
+
+    // php://output escribe directo en la respuesta (no es un archivo en disco);
+    // PHP cierra el flujo al terminar con exit.
     $out = fopen('php://output', 'w');
-    fwrite($out, "\xEF\xBB\xBF"); // BOM para que Excel reconozca UTF-8
     fputcsv($out, array_merge(['Fecha'], array_values($fields)));
 
     foreach ($ids as $id) {
@@ -278,7 +285,6 @@ function whatsapp_button_export_leads()
         fputcsv($out, $row);
     }
 
-    fclose($out);
     exit;
 }
 add_action('admin_post_wab_export_leads', 'whatsapp_button_export_leads');

@@ -36,21 +36,49 @@ function whatsapp_button_settings_page()
                     </td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row">Plantilla del Mensaje</th>
+                    <th scope="row">Título del formulario</th>
                     <td>
-                        <textarea name="whatsapp_message_template" rows="4" style="width: 100%;"><?php echo esc_textarea(get_option('whatsapp_message_template', WAB_DEFAULT_TEMPLATE)); ?></textarea>
-                        <p>Usa los marcadores: <code>{name}</code>, <code>{email}</code>, <code>{message}</code> y <code>{phone}</code> (si está activo el campo teléfono).</p>
+                        <input type="text" name="whatsapp_form_title" value="<?php echo esc_attr(get_option('whatsapp_form_title', WAB_DEFAULT_FORM_TITLE)); ?>" style="width: 100%;" />
+                        <p>Déjalo vacío para no mostrar título.</p>
                     </td>
                 </tr>
 
                 <tr valign="top">
-                    <th scope="row">Campo teléfono</th>
+                    <th scope="row">Descripción del formulario</th>
                     <td>
-                        <label>
-                            <input type="checkbox" name="whatsapp_show_phone_field" value="1" <?php checked(get_option('whatsapp_show_phone_field'), '1'); ?> />
-                            Mostrar un campo de teléfono opcional en el formulario
+                        <textarea name="whatsapp_form_description" rows="2" style="width: 100%;"><?php echo esc_textarea(get_option('whatsapp_form_description', WAB_DEFAULT_FORM_DESCRIPTION)); ?></textarea>
+                        <p>Texto bajo el título. Déjalo vacío para no mostrar descripción.</p>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <th scope="row">Plantilla del Mensaje</th>
+                    <td>
+                        <?php $template = get_option('whatsapp_message_template', WAB_DEFAULT_TEMPLATE); ?>
+                        <textarea name="whatsapp_message_template" rows="4" style="width: 100%;"><?php echo esc_textarea($template); ?></textarea>
+                        <p>Usa los marcadores: <code>{name}</code>, <code>{message}</code>, <code>{email}</code> (si está activo el campo email) y <code>{phone}</code> (si está activo el campo teléfono).</p>
+                        <?php if (! whatsapp_button_email_enabled() && strpos($template, '{email}') !== false) : ?>
+                            <p style="color: #d63638;">⚠ El campo email está desactivado pero la plantilla usa <code>{email}</code>: quedará vacío en el mensaje de WhatsApp.</p>
+                        <?php endif; ?>
+                        <?php if (! get_option('whatsapp_show_phone_field') && strpos($template, '{phone}') !== false) : ?>
+                            <p style="color: #d63638;">⚠ El campo teléfono está desactivado pero la plantilla usa <code>{phone}</code>: quedará vacío en el mensaje de WhatsApp.</p>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+
+                <tr valign="top">
+                    <th scope="row">Campos del formulario</th>
+                    <td>
+                        <p><em>El nombre y el mensaje siempre se piden.</em></p>
+                        <label style="display: block; margin: 8px 0;">
+                            <input type="checkbox" name="whatsapp_show_email_field" value="1" <?php checked(whatsapp_button_email_enabled()); ?> />
+                            Pedir email (obligatorio)
                         </label>
-                        <p>Útil para contactar al lead aunque no llegue a enviar el mensaje de WhatsApp.</p>
+                        <label style="display: block; margin: 8px 0;">
+                            <input type="checkbox" name="whatsapp_show_phone_field" value="1" <?php checked(get_option('whatsapp_show_phone_field'), '1'); ?> />
+                            Pedir teléfono (opcional)
+                        </label>
+                        <p>Si no pides el email, el correo de aviso no tendrá "Responder a" y tendrás que contactar al lead por WhatsApp o por teléfono.</p>
                     </td>
                 </tr>
 
@@ -156,6 +184,9 @@ function whatsapp_button_register_settings()
     register_setting($group, 'whatsapp_message_field_type', ['sanitize_callback' => 'whatsapp_button_sanitize_field_type']);
     register_setting($group, 'whatsapp_select_options', ['sanitize_callback' => 'sanitize_textarea_field']);
     register_setting($group, 'whatsapp_show_phone_field', ['sanitize_callback' => 'whatsapp_button_sanitize_checkbox']);
+    register_setting($group, 'whatsapp_show_email_field', ['sanitize_callback' => 'whatsapp_button_sanitize_checkbox']);
+    register_setting($group, 'whatsapp_form_title', ['sanitize_callback' => 'sanitize_text_field']);
+    register_setting($group, 'whatsapp_form_description', ['sanitize_callback' => 'sanitize_textarea_field']);
     register_setting($group, 'whatsapp_consent_enabled', ['sanitize_callback' => 'whatsapp_button_sanitize_checkbox']);
     register_setting($group, 'whatsapp_consent_text', ['sanitize_callback' => 'sanitize_text_field']);
     register_setting($group, 'whatsapp_privacy_url', ['sanitize_callback' => 'esc_url_raw']);
