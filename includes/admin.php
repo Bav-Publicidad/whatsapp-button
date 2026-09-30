@@ -100,6 +100,7 @@ function whatsapp_button_settings_page()
                     <td>
                         <input type="email" name="whatsapp_lead_email" value="<?php echo esc_attr(get_option('whatsapp_lead_email', get_option('admin_email'))); ?>" style="width: 100%;" />
                         <p>Este será el correo donde llegarán los leads incluso si el usuario no inicia el chat.</p>
+                        <p>Todos los leads se guardan además en <a href="<?php echo esc_url(admin_url('edit.php?post_type=' . WAB_LEAD_POST_TYPE)); ?>">Leads WhatsApp</a>, aunque falle el envío del correo.</p>
                     </td>
                 </tr>
 

@@ -36,11 +36,19 @@ function whatsapp_button_handle_lead()
         wp_send_json_error(['error' => 'Opción no válida.'], 400);
     }
 
-    if (! whatsapp_button_send_lead_email($lead)) {
-        wp_send_json_error(['error' => 'No se pudo enviar el correo. Verifica la configuración SMTP.'], 500);
+    // Se guarda primero en la BD: si el correo falla, el lead no se pierde
+    $lead_id   = whatsapp_button_save_lead($lead);
+    $mail_sent = whatsapp_button_send_lead_email($lead);
+
+    if ($lead_id) {
+        update_post_meta($lead_id, '_wab_mail_sent', $mail_sent ? '1' : '0');
     }
 
-    wp_send_json_success();
+    if (! $lead_id && ! $mail_sent) {
+        wp_send_json_error(['error' => 'No se pudo registrar el lead.'], 500);
+    }
+
+    wp_send_json_success(['saved' => (bool) $lead_id, 'mail_sent' => $mail_sent]);
 }
 
 // Leer y sanitizar los datos enviados por el formulario
