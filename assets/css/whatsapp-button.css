@@ -5,27 +5,140 @@
     z-index: 1000;
 }
 
-/* Reset: evita que los estilos de <button> del tema afecten al icono */
-.whatsapp-button {
-    display: block;
-    padding: 0;
-    margin: 0;
-    border: 0;
-    background: none;
-    box-shadow: none;
-    cursor: pointer;
-    line-height: 0;
+/*
+ * Reset del botón flotante: los temas suelen dar a <button> borde, fondo,
+ * sombra, padding y efectos en :hover/:focus/:active. Se anulan con
+ * !important en todos los estados para que solo se vea el icono.
+ */
+.whatsapp-container .whatsapp-button,
+.whatsapp-container .whatsapp-button:hover,
+.whatsapp-container .whatsapp-button:focus,
+.whatsapp-container .whatsapp-button:active {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    position: relative !important;
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+    outline: none;
+    color: inherit !important;
+    font: inherit !important;
+    line-height: 0 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    cursor: pointer !important;
+    transition: none !important;
 }
 
-.whatsapp-button img {
-    width: 80px;
-    height: 80px;
+.whatsapp-container .whatsapp-button img {
+    display: block !important;
+    width: 80px !important;
+    height: 80px !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    box-shadow: none !important;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
-.whatsapp-button:focus-visible {
-    outline: 3px solid #25D366;
-    outline-offset: 3px;
-    border-radius: 50%;
+/* Hover: el icono crece un poco con un rebote suave */
+.whatsapp-container .whatsapp-button:hover img,
+.whatsapp-container .whatsapp-button:focus-visible img {
+    transform: scale(1.12);
+}
+
+.whatsapp-container .whatsapp-button:active img {
+    transform: scale(0.95);
+}
+
+.whatsapp-container .whatsapp-button:focus-visible {
+    outline: 3px solid #25D366 !important;
+    outline-offset: 3px !important;
+}
+
+/*
+ * Animación de entrada: el botón sube y aparece con un pequeño rebote;
+ * después emite dos ondas verdes para llamar la atención.
+ */
+.whatsapp-container .whatsapp-button {
+    animation: wab-enter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.4s both;
+}
+
+.whatsapp-container .whatsapp-button::before,
+.whatsapp-container .whatsapp-button::after {
+    content: "" !important;
+    position: absolute !important;
+    inset: 0 !important;
+    border-radius: 50% !important;
+    background: transparent !important;
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.55);
+    pointer-events: none !important;
+    opacity: 0;
+    animation: wab-ripple 1.6s ease-out 1.1s 2;
+}
+
+.whatsapp-container .whatsapp-button::after {
+    animation-delay: 1.5s;
+}
+
+@keyframes wab-enter {
+    0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.4);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes wab-ripple {
+    0% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.55);
+    }
+    100% {
+        opacity: 0;
+        box-shadow: 0 0 0 22px rgba(37, 211, 102, 0);
+    }
+}
+
+@keyframes wab-popup-in {
+    0% {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Sin animaciones para quien las tiene desactivadas en su sistema */
+@media (prefers-reduced-motion: reduce) {
+    .whatsapp-container .whatsapp-button,
+    .whatsapp-container .whatsapp-button::before,
+    .whatsapp-container .whatsapp-button::after,
+    .whatsapp-popup {
+        animation: none !important;
+    }
+
+    .whatsapp-container .whatsapp-button img {
+        transition: none !important;
+    }
 }
 
 .whatsapp-popup {
@@ -43,30 +156,47 @@
     overflow-y: auto;
     box-sizing: border-box;
     z-index: 1001;
+    transform-origin: bottom right;
+    animation: wab-popup-in 0.25s ease-out;
 }
 
 .whatsapp-popup[hidden] {
     display: none;
 }
 
-.whatsapp-popup .whatsapp-close {
-    position: absolute;
-    top: 6px;
-    right: 8px;
-    width: auto;
-    padding: 4px 8px;
-    margin: 0;
-    border: 0;
-    background: none;
-    color: #888;
-    font-size: 22px;
-    line-height: 1;
-    cursor: pointer;
+.whatsapp-popup .whatsapp-close,
+.whatsapp-popup .whatsapp-close:hover,
+.whatsapp-popup .whatsapp-close:focus,
+.whatsapp-popup .whatsapp-close:active {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    position: absolute !important;
+    top: 6px !important;
+    right: 8px !important;
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 4px 8px !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 4px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    color: #888 !important;
+    font-family: inherit !important;
+    font-size: 22px !important;
+    font-weight: normal !important;
+    line-height: 1 !important;
+    text-transform: none !important;
+    cursor: pointer !important;
+    transition: color 0.2s !important;
 }
 
-.whatsapp-popup .whatsapp-close:hover {
-    color: #333;
-    background: none;
+.whatsapp-popup .whatsapp-close:hover,
+.whatsapp-popup .whatsapp-close:focus-visible {
+    color: #333 !important;
 }
 
 .whatsapp-popup h3 {
@@ -130,21 +260,37 @@
     text-decoration: underline;
 }
 
-.whatsapp-popup button[type="submit"] {
-    width: 100%;
-    padding: 10px;
-    background-color: #25D366;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 16px;
-    display: block;
-    margin: 0;
+.whatsapp-popup button[type="submit"],
+.whatsapp-popup button[type="submit"]:hover,
+.whatsapp-popup button[type="submit"]:focus,
+.whatsapp-popup button[type="submit"]:active {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    padding: 10px !important;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 8px !important;
+    background: #25D366 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    color: #fff !important;
+    font-family: inherit !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 1.4 !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+    cursor: pointer !important;
+    transition: background-color 0.2s !important;
 }
 
-.whatsapp-popup button[type="submit"]:hover {
-    background-color: #1EBE58;
+.whatsapp-popup button[type="submit"]:hover,
+.whatsapp-popup button[type="submit"]:focus-visible {
+    background: #1EBE58 !important;
 }
 
 .whatsapp-popup .wab-hp {

@@ -17,6 +17,7 @@ function whatsapp_button_uninstall_options()
         'whatsapp_tracking_code',
         'whatsapp_show_phone_field',
         'whatsapp_show_email_field',
+        'whatsapp_show_message_field',
         'whatsapp_form_title',
         'whatsapp_form_description',
         'whatsapp_consent_enabled',

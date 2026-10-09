@@ -8,8 +8,8 @@ if (! defined('ABSPATH')) {
 function whatsapp_button_settings_menu()
 {
     add_options_page(
-        'Configuración del Botón de WhatsApp',
-        'WhatsApp Button',
+        'Configuración de Chat Lead Button',
+        'Chat Lead Button',
         'manage_options',
         'whatsapp-button-settings',
         'whatsapp_button_settings_page'
@@ -21,7 +21,7 @@ function whatsapp_button_settings_page()
 {
 ?>
     <div class="wrap">
-        <h1>Configuración del Botón de WhatsApp</h1>
+        <h1>Configuración de Chat Lead Button</h1>
         <form method="post" action="options.php">
             <?php
             settings_fields('whatsapp-button-settings-group');
@@ -56,9 +56,12 @@ function whatsapp_button_settings_page()
                     <td>
                         <?php $template = get_option('whatsapp_message_template', WAB_DEFAULT_TEMPLATE); ?>
                         <textarea name="whatsapp_message_template" rows="4" style="width: 100%;"><?php echo esc_textarea($template); ?></textarea>
-                        <p>Usa los marcadores: <code>{name}</code>, <code>{message}</code>, <code>{email}</code> (si está activo el campo email) y <code>{phone}</code> (si está activo el campo teléfono).</p>
+                        <p>Usa los marcadores: <code>{name}</code>, <code>{message}</code> (si está activo el campo mensaje), <code>{email}</code> (si está activo el campo email) y <code>{phone}</code> (si está activo el campo teléfono).</p>
                         <?php if (! whatsapp_button_email_enabled() && strpos($template, '{email}') !== false) : ?>
                             <p style="color: #d63638;">⚠ El campo email está desactivado pero la plantilla usa <code>{email}</code>: quedará vacío en el mensaje de WhatsApp.</p>
+                        <?php endif; ?>
+                        <?php if (! whatsapp_button_message_enabled() && strpos($template, '{message}') !== false) : ?>
+                            <p style="color: #d63638;">⚠ El campo mensaje está desactivado pero la plantilla usa <code>{message}</code>: quedará vacío en el mensaje de WhatsApp.</p>
                         <?php endif; ?>
                         <?php if (! get_option('whatsapp_show_phone_field') && strpos($template, '{phone}') !== false) : ?>
                             <p style="color: #d63638;">⚠ El campo teléfono está desactivado pero la plantilla usa <code>{phone}</code>: quedará vacío en el mensaje de WhatsApp.</p>
@@ -69,7 +72,11 @@ function whatsapp_button_settings_page()
                 <tr valign="top">
                     <th scope="row">Campos del formulario</th>
                     <td>
-                        <p><em>El nombre y el mensaje siempre se piden.</em></p>
+                        <p><em>El nombre siempre se pide.</em></p>
+                        <label style="display: block; margin: 8px 0;">
+                            <input type="checkbox" name="whatsapp_show_message_field" value="1" <?php checked(whatsapp_button_message_enabled()); ?> />
+                            Pedir mensaje (obligatorio; texto o select según "Tipo de campo para el mensaje")
+                        </label>
                         <label style="display: block; margin: 8px 0;">
                             <input type="checkbox" name="whatsapp_show_email_field" value="1" <?php checked(whatsapp_button_email_enabled()); ?> />
                             Pedir email (obligatorio)
@@ -143,7 +150,7 @@ function whatsapp_button_settings_page()
                     <td>
                         <input type="email" name="whatsapp_lead_email" value="<?php echo esc_attr(get_option('whatsapp_lead_email', get_option('admin_email'))); ?>" style="width: 100%;" />
                         <p>Este será el correo donde llegarán los leads incluso si el usuario no inicia el chat.</p>
-                        <p>Todos los leads se guardan además en <a href="<?php echo esc_url(admin_url('edit.php?post_type=' . WAB_LEAD_POST_TYPE)); ?>">Leads WhatsApp</a>, aunque falle el envío del correo.</p>
+                        <p>Todos los leads se guardan además en <a href="<?php echo esc_url(admin_url('edit.php?post_type=' . WAB_LEAD_POST_TYPE)); ?>">Chat Leads</a>, aunque falle el envío del correo.</p>
                     </td>
                 </tr>
 
@@ -184,6 +191,7 @@ function whatsapp_button_register_settings()
     register_setting($group, 'whatsapp_message_field_type', ['sanitize_callback' => 'whatsapp_button_sanitize_field_type']);
     register_setting($group, 'whatsapp_select_options', ['sanitize_callback' => 'sanitize_textarea_field']);
     register_setting($group, 'whatsapp_show_phone_field', ['sanitize_callback' => 'whatsapp_button_sanitize_checkbox']);
+    register_setting($group, 'whatsapp_show_message_field', ['sanitize_callback' => 'whatsapp_button_sanitize_checkbox']);
     register_setting($group, 'whatsapp_show_email_field', ['sanitize_callback' => 'whatsapp_button_sanitize_checkbox']);
     register_setting($group, 'whatsapp_form_title', ['sanitize_callback' => 'sanitize_text_field']);
     register_setting($group, 'whatsapp_form_description', ['sanitize_callback' => 'sanitize_textarea_field']);

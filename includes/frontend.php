@@ -17,6 +17,12 @@ function whatsapp_button_email_enabled()
     return get_option('whatsapp_show_email_field', '1') === '1';
 }
 
+// Campo mensaje: activo por defecto
+function whatsapp_button_message_enabled()
+{
+    return get_option('whatsapp_show_message_field', '1') === '1';
+}
+
 // Casilla de consentimiento de datos: activa por defecto
 function whatsapp_button_consent_enabled()
 {
@@ -51,7 +57,7 @@ function whatsapp_button_enqueue_assets()
     $config = [
         'phoneNumber'     => get_option('whatsapp_phone_number', ''),
         'messageTemplate' => get_option('whatsapp_message_template', WAB_DEFAULT_TEMPLATE),
-        'fieldType'       => get_option('whatsapp_message_field_type', 'text'),
+        'fieldType'       => whatsapp_button_message_enabled() ? get_option('whatsapp_message_field_type', 'text') : 'none',
         'ajaxUrl'         => admin_url('admin-ajax.php'),
         'nonce'           => wp_create_nonce('wab_submit_lead'),
     ];
@@ -114,16 +120,18 @@ function whatsapp_button_display()
                     <input type="tel" id="whatsapp-phone" name="phone" maxlength="30" autocomplete="tel" placeholder="Tu teléfono" />
                 <?php endif; ?>
 
-                <label for="whatsapp-message">Mensaje:</label>
-                <?php if ($message_field_type === 'select') : ?>
-                    <select id="whatsapp-message" name="message" required>
-                        <option value="" disabled selected>Selecciona una opción</option>
-                        <?php foreach ($select_options as $option) : ?>
-                            <option value="<?php echo esc_attr($option); ?>"><?php echo esc_html($option); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                <?php else : ?>
-                    <textarea id="whatsapp-message" name="message" required maxlength="1000" placeholder="Escribe tu mensaje"></textarea>
+                <?php if (whatsapp_button_message_enabled()) : ?>
+                    <label for="whatsapp-message">Mensaje:</label>
+                    <?php if ($message_field_type === 'select') : ?>
+                        <select id="whatsapp-message" name="message" required>
+                            <option value="" disabled selected>Selecciona una opción</option>
+                            <?php foreach ($select_options as $option) : ?>
+                                <option value="<?php echo esc_attr($option); ?>"><?php echo esc_html($option); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    <?php else : ?>
+                        <textarea id="whatsapp-message" name="message" required maxlength="1000" placeholder="Escribe tu mensaje"></textarea>
+                    <?php endif; ?>
                 <?php endif; ?>
 
                 <?php if (whatsapp_button_consent_enabled()) : ?>

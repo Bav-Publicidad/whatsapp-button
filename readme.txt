@@ -1,4 +1,4 @@
-=== Chat Lead Button – Lead capture for WhatsApp ===
+=== Chat Lead Button ===
 Contributors: desarrolladorbavit
 Tags: whatsapp, lead capture, click to chat, contact form, google tag manager
 Requires at least: 5.8
@@ -16,7 +16,7 @@ Chat Lead Button adds a floating button to your site. When visitors click it, a 
 
 **Features**
 
-* Floating button with a pop-up form (name, message, optional email and phone).
+* Floating button with a pop-up form (name, plus optional message, email and phone).
 * Customizable form title, description and WhatsApp message template with `{name}`, `{email}`, `{phone}` and `{message}` placeholders.
 * Message field as free text or a dropdown with your own options.
 * Email notification with Reply-To set to the lead, traffic source (UTM parameters, gclid, fbclid, msclkid, landing page, referrer), date and device.
@@ -31,7 +31,7 @@ This plugin is not affiliated with, endorsed by or sponsored by WhatsApp or Meta
 
 1. Upload the plugin folder to `/wp-content/plugins/` or install it from the Plugins screen.
 2. Activate the plugin.
-3. Go to **Settings → WhatsApp Button** and enter your WhatsApp number with country code (digits only, e.g. `573001234567`).
+3. Go to **Settings → Chat Lead Button** and enter your WhatsApp number with country code (digits only, e.g. `573001234567`).
 4. Adjust the form fields, texts and the email address that receives leads.
 
 == Frequently Asked Questions ==

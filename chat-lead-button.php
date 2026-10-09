@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name:       Chat Lead Button – Lead capture for WhatsApp
+ * Plugin Name:       Chat Lead Button
  * Description:       Botón flotante de chat con formulario de captura de leads: envío por correo, registro en la base de datos y evento para Google Tag Manager.
  * Version:           1.3.0
  * Requires at least: 5.8

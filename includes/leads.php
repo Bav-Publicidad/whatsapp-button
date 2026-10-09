@@ -37,9 +37,9 @@ function whatsapp_button_register_lead_post_type()
 {
     register_post_type(WAB_LEAD_POST_TYPE, [
         'labels' => [
-            'name'               => 'Leads WhatsApp',
-            'singular_name'      => 'Lead WhatsApp',
-            'menu_name'          => 'Leads WhatsApp',
+            'name'               => 'Chat Leads',
+            'singular_name'      => 'Chat Lead',
+            'menu_name'          => 'Chat Leads',
             'all_items'          => 'Todos los leads',
             'edit_item'          => 'Detalle del lead',
             'search_items'       => 'Buscar leads',
