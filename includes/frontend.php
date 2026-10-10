@@ -91,61 +91,80 @@ function whatsapp_button_display()
     $select_options = whatsapp_button_get_select_options();
     $form_title = get_option('whatsapp_form_title', WAB_DEFAULT_FORM_TITLE);
     $form_description = get_option('whatsapp_form_description', WAB_DEFAULT_FORM_DESCRIPTION);
-    $dialog_label = $form_title !== '' ? 'aria-labelledby="whatsapp-popup-title"' : 'aria-label="Formulario de WhatsApp"';
+    // Cabecera tipo chat de WhatsApp: icono del sitio (o el de WhatsApp) y nombre del sitio
+    $site_name = get_bloginfo('name');
+    $avatar_url = get_site_icon_url(96);
+    if (! $avatar_url) {
+        $avatar_url = WAB_URL . 'whatsapp-icon.png';
+    }
 ?>
     <div class="whatsapp-container">
         <button type="button" class="whatsapp-button" aria-label="Abrir chat de WhatsApp" aria-expanded="false" aria-controls="whatsapp-popup">
             <img src="<?php echo esc_url(WAB_URL . 'whatsapp-icon.png'); ?>" alt="" />
         </button>
-        <div class="whatsapp-popup" id="whatsapp-popup" role="dialog" <?php echo $dialog_label; ?> hidden>
-            <button type="button" class="whatsapp-close" aria-label="Cerrar">&times;</button>
-            <form id="whatsapp-form">
-                <?php if ($form_title !== '') : ?>
-                    <h3 id="whatsapp-popup-title"><?php echo esc_html($form_title); ?></h3>
-                <?php endif; ?>
-                <?php if ($form_description !== '') : ?>
-                    <p><?php echo nl2br(esc_html($form_description)); ?></p>
+        <div class="whatsapp-popup" id="whatsapp-popup" role="dialog" aria-labelledby="whatsapp-popup-name" hidden>
+            <div class="wab-header">
+                <img class="wab-avatar" src="<?php echo esc_url($avatar_url); ?>" alt="" />
+                <div class="wab-header-text">
+                    <span class="wab-header-name" id="whatsapp-popup-name"><?php echo esc_html($site_name); ?></span>
+                    <span class="wab-header-status">WhatsApp</span>
+                </div>
+                <button type="button" class="whatsapp-close" aria-label="Cerrar">&times;</button>
+            </div>
+            <form id="whatsapp-form" class="wab-body">
+                <?php if ($form_title !== '' || $form_description !== '') : ?>
+                    <div class="wab-bubble">
+                        <?php if ($form_title !== '') : ?>
+                            <span class="wab-bubble-title"><?php echo esc_html($form_title); ?></span>
+                        <?php endif; ?>
+                        <?php if ($form_description !== '') : ?>
+                            <span class="wab-bubble-text"><?php echo nl2br(esc_html($form_description)); ?></span>
+                        <?php endif; ?>
+                        <span class="wab-bubble-time" aria-hidden="true"></span>
+                    </div>
                 <?php endif; ?>
 
-                <label for="whatsapp-name">Nombre:</label>
-                <input type="text" id="whatsapp-name" name="name" required maxlength="100" autocomplete="name" placeholder="Tu nombre" />
+                <div class="wab-fields">
+                    <label for="whatsapp-name">Nombre</label>
+                    <input type="text" id="whatsapp-name" name="name" required maxlength="100" autocomplete="name" placeholder="Tu nombre" />
 
-                <?php if (whatsapp_button_email_enabled()) : ?>
-                    <label for="whatsapp-email">Email:</label>
-                    <input type="email" id="whatsapp-email" name="email" required autocomplete="email" placeholder="Tu email" />
-                <?php endif; ?>
-
-                <?php if (get_option('whatsapp_show_phone_field')) : ?>
-                    <label for="whatsapp-phone">Teléfono (opcional):</label>
-                    <input type="tel" id="whatsapp-phone" name="phone" maxlength="30" autocomplete="tel" placeholder="Tu teléfono" />
-                <?php endif; ?>
-
-                <?php if (whatsapp_button_message_enabled()) : ?>
-                    <label for="whatsapp-message">Mensaje:</label>
-                    <?php if ($message_field_type === 'select') : ?>
-                        <select id="whatsapp-message" name="message" required>
-                            <option value="" disabled selected>Selecciona una opción</option>
-                            <?php foreach ($select_options as $option) : ?>
-                                <option value="<?php echo esc_attr($option); ?>"><?php echo esc_html($option); ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    <?php else : ?>
-                        <textarea id="whatsapp-message" name="message" required maxlength="1000" placeholder="Escribe tu mensaje"></textarea>
+                    <?php if (whatsapp_button_email_enabled()) : ?>
+                        <label for="whatsapp-email">Email</label>
+                        <input type="email" id="whatsapp-email" name="email" required autocomplete="email" placeholder="Tu email" />
                     <?php endif; ?>
-                <?php endif; ?>
 
-                <?php if (whatsapp_button_consent_enabled()) : ?>
-                    <label class="wab-consent" for="whatsapp-consent">
-                        <input type="checkbox" id="whatsapp-consent" name="consent" value="1" required />
-                        <span>
-                            <?php echo esc_html(get_option('whatsapp_consent_text', WAB_DEFAULT_CONSENT_TEXT)); ?>
-                            <?php $privacy_url = whatsapp_button_privacy_url(); ?>
-                            <?php if ($privacy_url) : ?>
-                                <a href="<?php echo esc_url($privacy_url); ?>" target="_blank" rel="noopener noreferrer">Ver política</a>
-                            <?php endif; ?>
-                        </span>
-                    </label>
-                <?php endif; ?>
+                    <?php if (get_option('whatsapp_show_phone_field')) : ?>
+                        <label for="whatsapp-phone">Teléfono <span class="wab-optional">(opcional)</span></label>
+                        <input type="tel" id="whatsapp-phone" name="phone" maxlength="30" autocomplete="tel" placeholder="Tu teléfono" />
+                    <?php endif; ?>
+
+                    <?php if (whatsapp_button_message_enabled()) : ?>
+                        <label for="whatsapp-message">Mensaje</label>
+                        <?php if ($message_field_type === 'select') : ?>
+                            <select id="whatsapp-message" name="message" required>
+                                <option value="" disabled selected>Selecciona una opción</option>
+                                <?php foreach ($select_options as $option) : ?>
+                                    <option value="<?php echo esc_attr($option); ?>"><?php echo esc_html($option); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        <?php else : ?>
+                            <textarea id="whatsapp-message" name="message" required maxlength="1000" placeholder="Escribe tu mensaje"></textarea>
+                        <?php endif; ?>
+                    <?php endif; ?>
+
+                    <?php if (whatsapp_button_consent_enabled()) : ?>
+                        <label class="wab-consent" for="whatsapp-consent">
+                            <input type="checkbox" id="whatsapp-consent" name="consent" value="1" required />
+                            <span>
+                                <?php echo esc_html(get_option('whatsapp_consent_text', WAB_DEFAULT_CONSENT_TEXT)); ?>
+                                <?php $privacy_url = whatsapp_button_privacy_url(); ?>
+                                <?php if ($privacy_url) : ?>
+                                    <a href="<?php echo esc_url($privacy_url); ?>" target="_blank" rel="noopener noreferrer">Ver política</a>
+                                <?php endif; ?>
+                            </span>
+                        </label>
+                    <?php endif; ?>
+                </div>
 
                 <!-- Honeypot anti-spam: oculto para humanos -->
                 <div class="wab-hp" aria-hidden="true">
@@ -153,7 +172,10 @@ function whatsapp_button_display()
                     <input type="text" id="whatsapp-website" name="website" tabindex="-1" autocomplete="off" />
                 </div>
 
-                <button type="submit">Iniciar Chat</button>
+                <button type="submit" class="wab-submit">
+                    <span>Iniciar chat</span>
+                    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path fill="currentColor" d="M1.101 21.757 23.8 12.028 1.101 2.3l.011 7.912 13.623 1.816-13.623 1.817-.011 7.912z"/></svg>
+                </button>
             </form>
         </div>
     </div>

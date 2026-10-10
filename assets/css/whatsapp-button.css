@@ -141,27 +141,100 @@
     }
 }
 
+/*
+ * Popup con el aspecto de una conversación de WhatsApp. El diseño es igual
+ * en todos los sitios: tipografía, colores y campos se fijan con !important
+ * para que los estilos del tema (inputs, labels, botones) no lo alteren.
+ */
 .whatsapp-popup {
+    --wab-header: #008069;
+    --wab-accent: #00a884;
+    --wab-accent-dark: #008069;
+    --wab-wallpaper: #efeae2;
+    --wab-bubble: #ffffff;
+    --wab-text: #111b21;
+    --wab-muted: #667781;
+    --wab-border: #d1d7db;
+
     position: fixed;
     bottom: 110px;
     right: 20px;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    width: 300px;
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    width: 340px;
     max-width: calc(100vw - 40px);
     max-height: calc(100vh - 130px);
-    overflow-y: auto;
+    overflow: hidden;
     box-sizing: border-box;
-    z-index: 1001;
+    border-radius: 12px;
+    background: var(--wab-wallpaper);
+    box-shadow: 0 12px 32px rgba(11, 20, 26, 0.22), 0 2px 6px rgba(11, 20, 26, 0.12);
+    text-align: left;
     transform-origin: bottom right;
     animation: wab-popup-in 0.25s ease-out;
 }
 
 .whatsapp-popup[hidden] {
-    display: none;
+    display: none !important;
+}
+
+.whatsapp-popup,
+.whatsapp-popup * {
+    box-sizing: border-box !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+    letter-spacing: normal !important;
+    text-transform: none !important;
+}
+
+/* Cabecera: como la barra superior de un chat */
+.whatsapp-popup .wab-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    flex-shrink: 0;
+    margin: 0 !important;
+    padding: 12px 8px 12px 16px !important;
+    background: var(--wab-header) !important;
+    color: #fff !important;
+}
+
+.whatsapp-popup .wab-avatar {
+    flex-shrink: 0;
+    display: block !important;
+    width: 40px !important;
+    height: 40px !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 50% !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    object-fit: cover;
+}
+
+.whatsapp-popup .wab-header-text {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.whatsapp-popup .wab-header-name {
+    overflow: hidden;
+    color: #fff !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.whatsapp-popup .wab-header-status {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 13px !important;
+    line-height: 1.3 !important;
 }
 
 .whatsapp-popup .whatsapp-close,
@@ -170,133 +243,293 @@
 .whatsapp-popup .whatsapp-close:active {
     -webkit-appearance: none !important;
     appearance: none !important;
-    position: absolute !important;
-    top: 6px !important;
-    right: 8px !important;
-    width: auto !important;
-    height: auto !important;
+    flex-shrink: 0;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
     min-width: 0 !important;
     min-height: 0 !important;
-    padding: 4px 8px !important;
+    padding: 0 !important;
     margin: 0 !important;
     border: 0 !important;
-    border-radius: 4px !important;
+    border-radius: 50% !important;
     background: transparent !important;
     box-shadow: none !important;
     text-shadow: none !important;
-    color: #888 !important;
-    font-family: inherit !important;
-    font-size: 22px !important;
+    color: #fff !important;
+    font-size: 26px !important;
     font-weight: normal !important;
     line-height: 1 !important;
-    text-transform: none !important;
     cursor: pointer !important;
-    transition: color 0.2s !important;
+    transition: background-color 0.2s !important;
 }
 
 .whatsapp-popup .whatsapp-close:hover,
 .whatsapp-popup .whatsapp-close:focus-visible {
-    color: #333 !important;
+    background: rgba(255, 255, 255, 0.15) !important;
 }
 
-.whatsapp-popup h3 {
-    margin: 0 0 10px;
-    font-size: 18px;
-    color: #333;
-    text-align: center;
+.whatsapp-popup .whatsapp-close:focus-visible {
+    outline: 2px solid #fff !important;
+    outline-offset: -2px !important;
 }
 
-.whatsapp-popup p {
-    margin: 0 0 15px;
-    font-size: 14px;
-    color: #555;
-    text-align: center;
+/* Cuerpo: fondo de chat con un patrón sutil de puntos */
+.whatsapp-popup .wab-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    margin: 0 !important;
+    padding: 16px !important;
+    background-color: var(--wab-wallpaper) !important;
+    background-image: radial-gradient(rgba(11, 20, 26, 0.06) 1px, transparent 1px) !important;
+    background-size: 14px 14px !important;
 }
 
-.whatsapp-popup label {
-    display: block;
-    margin: 10px 0 5px;
-    font-size: 14px;
-    color: #555;
+/* Título y descripción como un mensaje recibido */
+.whatsapp-popup .wab-bubble {
+    position: relative;
+    display: block !important;
+    max-width: 92%;
+    margin: 0 0 16px 8px !important;
+    padding: 8px 10px 6px !important;
+    border-radius: 0 8px 8px 8px !important;
+    background: var(--wab-bubble) !important;
+    box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13) !important;
+    color: var(--wab-text) !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+    animation: wab-bubble-in 0.35s ease-out 0.15s both;
 }
 
-.whatsapp-popup input,
-.whatsapp-popup textarea,
-.whatsapp-popup select {
-    width: 100%;
-    padding: 10px;
-    margin: 0 0 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 14px;
-    display: block;
-    box-sizing: border-box;
+/* Colita de la burbuja */
+.whatsapp-popup .wab-bubble::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -8px;
+    border-style: solid;
+    border-width: 0 8px 8px 0;
+    border-color: transparent var(--wab-bubble) transparent transparent;
 }
 
-.whatsapp-popup textarea {
-    resize: none;
-    height: 80px;
+.whatsapp-popup .wab-bubble-title {
+    display: block !important;
+    margin: 0 0 2px !important;
+    color: var(--wab-text) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
 }
 
-.whatsapp-popup .wab-consent {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    margin: 0 0 12px;
-    font-size: 12px;
-    line-height: 1.4;
-    cursor: pointer;
+.whatsapp-popup .wab-bubble-text {
+    display: block !important;
+    color: var(--wab-text) !important;
+    font-size: 14px !important;
 }
 
-.whatsapp-popup .wab-consent input {
-    width: auto;
-    margin: 2px 0 0;
-    padding: 0;
-    flex-shrink: 0;
+.whatsapp-popup .wab-bubble-time {
+    display: block !important;
+    margin-top: 2px !important;
+    color: var(--wab-muted) !important;
+    font-size: 11px !important;
+    line-height: 1 !important;
+    text-align: right !important;
 }
 
-.whatsapp-popup .wab-consent a {
-    color: #128C7E;
-    text-decoration: underline;
+.whatsapp-popup .wab-bubble-time:empty {
+    display: none !important;
 }
 
-.whatsapp-popup button[type="submit"],
-.whatsapp-popup button[type="submit"]:hover,
-.whatsapp-popup button[type="submit"]:focus,
-.whatsapp-popup button[type="submit"]:active {
+/* Campos del formulario */
+.whatsapp-popup .wab-fields {
+    margin: 0 !important;
+    padding: 14px !important;
+    border-radius: 10px !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13) !important;
+}
+
+.whatsapp-popup .wab-fields label {
+    display: block !important;
+    margin: 0 0 4px !important;
+    padding: 0 !important;
+    color: var(--wab-muted) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    line-height: 1.3 !important;
+}
+
+.whatsapp-popup .wab-optional {
+    font-weight: normal !important;
+    opacity: 0.8;
+}
+
+.whatsapp-popup .wab-fields input[type="text"],
+.whatsapp-popup .wab-fields input[type="email"],
+.whatsapp-popup .wab-fields input[type="tel"],
+.whatsapp-popup .wab-fields textarea,
+.whatsapp-popup .wab-fields select {
     -webkit-appearance: none !important;
     appearance: none !important;
     display: block !important;
     width: 100% !important;
     height: auto !important;
     min-height: 0 !important;
-    padding: 10px !important;
-    margin: 0 !important;
-    border: 0 !important;
+    margin: 0 0 12px !important;
+    padding: 9px 12px !important;
+    border: 1px solid var(--wab-border) !important;
     border-radius: 8px !important;
-    background: #25D366 !important;
+    background: #fff !important;
     box-shadow: none !important;
+    color: var(--wab-text) !important;
+    font-size: 14px !important;
+    font-weight: normal !important;
+    line-height: 1.4 !important;
+    outline: none !important;
+    transition: border-color 0.15s, box-shadow 0.15s !important;
+}
+
+.whatsapp-popup .wab-fields input::placeholder,
+.whatsapp-popup .wab-fields textarea::placeholder {
+    color: #8696a0 !important;
+    opacity: 1 !important;
+}
+
+.whatsapp-popup .wab-fields input[type="text"]:focus,
+.whatsapp-popup .wab-fields input[type="email"]:focus,
+.whatsapp-popup .wab-fields input[type="tel"]:focus,
+.whatsapp-popup .wab-fields textarea:focus,
+.whatsapp-popup .wab-fields select:focus {
+    border-color: var(--wab-accent) !important;
+    box-shadow: 0 0 0 3px rgba(0, 168, 132, 0.18) !important;
+}
+
+.whatsapp-popup .wab-fields textarea {
+    height: 80px !important;
+    resize: none !important;
+}
+
+.whatsapp-popup .wab-fields select {
+    padding-right: 34px !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%23667781' stroke-width='1.8' d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 12px 8px !important;
+    cursor: pointer;
+}
+
+/* Casilla de consentimiento */
+.whatsapp-popup .wab-fields .wab-consent {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    margin: 2px 0 0 !important;
+    color: var(--wab-muted) !important;
+    font-size: 12px !important;
+    font-weight: normal !important;
+    line-height: 1.4 !important;
+    cursor: pointer;
+}
+
+.whatsapp-popup .wab-consent input[type="checkbox"] {
+    flex-shrink: 0;
+    width: 16px !important;
+    height: 16px !important;
+    margin: 1px 0 0 !important;
+    padding: 0 !important;
+    accent-color: var(--wab-accent);
+    cursor: pointer;
+}
+
+.whatsapp-popup .wab-consent a {
+    color: var(--wab-accent-dark) !important;
+    text-decoration: underline !important;
+}
+
+/* Botón de envío: verde WhatsApp con el icono de enviar */
+.whatsapp-popup .wab-submit,
+.whatsapp-popup .wab-submit:hover,
+.whatsapp-popup .wab-submit:focus,
+.whatsapp-popup .wab-submit:active {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 14px 0 0 !important;
+    padding: 11px 16px !important;
+    border: 0 !important;
+    border-radius: 24px !important;
+    background: var(--wab-accent-dark) !important;
+    box-shadow: 0 1px 3px rgba(11, 20, 26, 0.2) !important;
     text-shadow: none !important;
     color: #fff !important;
-    font-family: inherit !important;
-    font-size: 16px !important;
+    font-size: 15px !important;
     font-weight: 600 !important;
-    line-height: 1.4 !important;
-    letter-spacing: normal !important;
-    text-transform: none !important;
+    line-height: 1.3 !important;
     cursor: pointer !important;
-    transition: background-color 0.2s !important;
+    transition: background-color 0.2s, transform 0.1s !important;
 }
 
-.whatsapp-popup button[type="submit"]:hover,
-.whatsapp-popup button[type="submit"]:focus-visible {
-    background: #1EBE58 !important;
+.whatsapp-popup .wab-submit:hover,
+.whatsapp-popup .wab-submit:focus-visible {
+    background: #006d59 !important;
 }
 
+.whatsapp-popup .wab-submit:active {
+    transform: scale(0.98);
+}
+
+.whatsapp-popup .wab-submit:focus-visible {
+    outline: 3px solid rgba(0, 168, 132, 0.4) !important;
+    outline-offset: 2px !important;
+}
+
+.whatsapp-popup .wab-submit svg {
+    display: block !important;
+    flex-shrink: 0;
+    width: 18px !important;
+    height: 18px !important;
+}
+
+/* Honeypot anti-spam: oculto para humanos */
 .whatsapp-popup .wab-hp {
-    position: absolute;
-    left: -9999px;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
+    position: absolute !important;
+    left: -9999px !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+}
+
+@keyframes wab-bubble-in {
+    0% {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Móvil: el popup ocupa el ancho de la pantalla con un margen */
+@media (max-width: 480px) {
+    .whatsapp-popup {
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-width: none;
+        bottom: 108px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .whatsapp-popup .wab-bubble {
+        animation: none !important;
+    }
 }

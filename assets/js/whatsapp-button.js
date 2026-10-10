@@ -76,7 +76,13 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+    // Hora en la burbuja de bienvenida, como en un mensaje recién recibido
+    const bubbleTime = whatsappPopup.querySelector(".wab-bubble-time");
+
     function openPopup() {
+        if (bubbleTime) {
+            bubbleTime.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        }
         whatsappPopup.hidden = false;
         whatsappButton.setAttribute("aria-expanded", "true");
         document.getElementById("whatsapp-name").focus();

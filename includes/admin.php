@@ -39,7 +39,8 @@ function whatsapp_button_settings_page()
                     <th scope="row">Título del formulario</th>
                     <td>
                         <input type="text" name="whatsapp_form_title" value="<?php echo esc_attr(get_option('whatsapp_form_title', WAB_DEFAULT_FORM_TITLE)); ?>" style="width: 100%;" />
-                        <p>Déjalo vacío para no mostrar título.</p>
+                        <p>Se muestra en negrita en la burbuja de bienvenida del chat. Déjalo vacío para no mostrar título.</p>
+                        <p>La cabecera del chat usa el nombre del sitio y el icono del sitio (<em>Apariencia → Personalizar → Identidad del sitio</em>); si no hay icono, se usa el de WhatsApp.</p>
                     </td>
                 </tr>
 
@@ -47,7 +48,7 @@ function whatsapp_button_settings_page()
                     <th scope="row">Descripción del formulario</th>
                     <td>
                         <textarea name="whatsapp_form_description" rows="2" style="width: 100%;"><?php echo esc_textarea(get_option('whatsapp_form_description', WAB_DEFAULT_FORM_DESCRIPTION)); ?></textarea>
-                        <p>Texto bajo el título. Déjalo vacío para no mostrar descripción.</p>
+                        <p>Texto de la burbuja de bienvenida, bajo el título. Déjalo vacío para no mostrar descripción.</p>
                     </td>
                 </tr>
 
