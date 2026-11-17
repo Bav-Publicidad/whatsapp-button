@@ -76,7 +76,13 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+    // Hora en la burbuja de bienvenida, como en un mensaje recién recibido
+    const bubbleTime = whatsappPopup.querySelector(".wab-bubble-time");
+
     function openPopup() {
+        if (bubbleTime) {
+            bubbleTime.textContent = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        }
         whatsappPopup.hidden = false;
         whatsappButton.setAttribute("aria-expanded", "true");
         document.getElementById("whatsapp-name").focus();
@@ -138,11 +144,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const name = document.getElementById("whatsapp-name").value.trim();
         const emailField = document.getElementById("whatsapp-email");
         const email = emailField ? emailField.value.trim() : "";
-        const message = document.getElementById("whatsapp-message").value.trim();
+        const messageField = document.getElementById("whatsapp-message");
+        const message = messageField ? messageField.value.trim() : "";
         const phoneField = document.getElementById("whatsapp-phone");
         const phone = phoneField ? phoneField.value.trim() : "";
 
-        if (!name || !message || (emailField && !email)) {
+        if (!name || (messageField && !message) || (emailField && !email)) {
             alert("Por favor, completa todos los campos.");
             return;
         }

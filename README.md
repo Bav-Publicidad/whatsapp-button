@@ -1,26 +1,26 @@
-# Chat Lead Button – Lead capture for WhatsApp
+# Chat Lead Button
 
-Botón flotante de WhatsApp para WordPress con un formulario emergente que captura el lead (nombre, email, mensaje y, opcionalmente, teléfono) antes de abrir la conversación.
+Botón flotante de WhatsApp para WordPress con un formulario emergente que captura el lead (nombre y, según la configuración, email, mensaje y teléfono) antes de abrir la conversación.
 
 ## Funcionalidades
 
 - **Botón y formulario**: plantilla del mensaje configurable, con los marcadores `{name}`, `{email}`, `{message}` y `{phone}`. El mensaje puede ser texto libre o un select con opciones.
 - **Aviso por correo**: cada lead se envía al correo configurado con los datos de contacto, el origen del tráfico (UTMs, gclid, fbclid, msclkid, página de entrada, referente), la fecha y el dispositivo. El correo lleva `Reply-To` con el email del lead para responderle directamente.
-- **Registro en la base de datos**: los leads se guardan en *Leads WhatsApp* (solo administradores), aunque falle el envío del correo. Se pueden exportar a CSV.
+- **Registro en la base de datos**: los leads se guardan en *Chat Leads* (solo administradores), aunque falle el envío del correo. Se pueden exportar a CSV.
 - **Medición**: envía el evento `whatsapp_lead` al `dataLayer` (ver abajo).
 - **Consentimiento**: casilla obligatoria de tratamiento de datos, con enlace a la política de privacidad.
 - **Anti-spam**: nonce, campo honeypot y límite de 5 envíos por IP cada 10 minutos.
 
 ## Configuración
 
-*Ajustes → WhatsApp Button*
+*Ajustes → Chat Lead Button*
 
 | Opción | Descripción |
 |---|---|
 | Número de WhatsApp | Con código de país, solo dígitos (por ejemplo `573001234567`). |
 | Título y descripción del formulario | Textos del encabezado del popup (vacíos = no se muestran). |
 | Plantilla del mensaje | Texto que se abre en WhatsApp. |
-| Campos del formulario | Pedir email (activo por defecto, obligatorio) y teléfono (desactivado por defecto, opcional). |
+| Campos del formulario | Pedir mensaje (activo por defecto, obligatorio), email (activo por defecto, obligatorio) y teléfono (desactivado por defecto, opcional). |
 | Tipo de campo / Opciones del select | Texto libre o lista de opciones separadas por comas. |
 | Consentimiento de datos | Activa la casilla, define su texto y la URL de la política. |
 | Correo para recibir leads | Si está vacío se usa el correo del administrador. |
@@ -63,7 +63,7 @@ El formulario usa un nonce de WordPress, que caduca a las 12–24 horas. Si el s
 
 ## Desinstalación
 
-Al borrar el plugin se eliminan sus ajustes. Los leads guardados **no** se eliminan; si quieres borrarlos, hazlo desde *Leads WhatsApp* antes de desinstalar.
+Al borrar el plugin se eliminan sus ajustes. Los leads guardados **no** se eliminan; si quieres borrarlos, hazlo desde *Chat Leads* antes de desinstalar.
 
 ## Autor
 Desarrollado por [BAV Publicidad](https://bavpublicidad.com/bavit) – Agencia de software especializada en soluciones web y automatización digital.

@@ -28,8 +28,17 @@ function whatsapp_button_handle_lead()
     // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
     $lead = whatsapp_button_sanitize_lead(wp_unslash($_POST));
 
-    if ($lead['name'] === '' || $lead['message'] === '') {
+    if ($lead['name'] === '') {
         wp_send_json_error(['error' => 'Datos incompletos.'], 400);
+    }
+
+    // El mensaje solo es obligatorio si el campo está activo en los ajustes
+    if (whatsapp_button_message_enabled()) {
+        if ($lead['message'] === '') {
+            wp_send_json_error(['error' => 'Datos incompletos.'], 400);
+        }
+    } else {
+        $lead['message'] = '';
     }
 
     // El email solo es obligatorio si el campo está activo en los ajustes
@@ -42,7 +51,8 @@ function whatsapp_button_handle_lead()
     }
 
     // Si el mensaje es un select, solo se aceptan las opciones configuradas
-    if (get_option('whatsapp_message_field_type', 'text') === 'select'
+    if (whatsapp_button_message_enabled()
+        && get_option('whatsapp_message_field_type', 'text') === 'select'
         && ! in_array($lead['message'], whatsapp_button_get_select_options(), true)) {
         wp_send_json_error(['error' => 'Opción no válida.'], 400);
     }
@@ -124,7 +134,9 @@ function whatsapp_button_send_lead_email(array $lead)
     if ($lead['phone'] !== '') {
         $lines[] = 'Teléfono: ' . $lead['phone'];
     }
-    $lines[] = 'Mensaje: ' . $lead['message'];
+    if ($lead['message'] !== '') {
+        $lines[] = 'Mensaje: ' . $lead['message'];
+    }
 
     $lines[] = '';
     $lines[] = '=== ORIGEN ===';
