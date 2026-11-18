@@ -1,17 +1,17 @@
 // Atribución: se guarda en sessionStorage porque el usuario puede llegar con
 // UTMs a una página y enviar el formulario desde otra.
-const WAB_ATTRIBUTION_KEY = "wab_attribution";
-const WAB_CAMPAIGN_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "fbclid", "msclkid"];
+const LEADIVO_ATTRIBUTION_KEY = "leadivo_attribution";
+const LEADIVO_CAMPAIGN_PARAMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "fbclid", "msclkid"];
 
-function wabReadAttribution() {
+function leadivoReadAttribution() {
     try {
-        return JSON.parse(sessionStorage.getItem(WAB_ATTRIBUTION_KEY)) || {};
+        return JSON.parse(sessionStorage.getItem(LEADIVO_ATTRIBUTION_KEY)) || {};
     } catch (err) {
         return {};
     }
 }
 
-function wabExternalReferrer() {
+function leadivoExternalReferrer() {
     try {
         if (document.referrer && new URL(document.referrer).host !== window.location.host) {
             return document.referrer;
@@ -22,12 +22,12 @@ function wabExternalReferrer() {
     return "";
 }
 
-function wabCaptureAttribution() {
-    const stored = wabReadAttribution();
+function leadivoCaptureAttribution() {
+    const stored = leadivoReadAttribution();
     const params = new URLSearchParams(window.location.search);
     const campaign = {};
 
-    WAB_CAMPAIGN_PARAMS.forEach(function (key) {
+    LEADIVO_CAMPAIGN_PARAMS.forEach(function (key) {
         const value = params.get(key);
         if (value) {
             campaign[key] = value;
@@ -39,20 +39,20 @@ function wabCaptureAttribution() {
     if (!stored.landing_page) {
         attribution = {
             landing_page: window.location.href,
-            referrer: wabExternalReferrer(),
+            referrer: leadivoExternalReferrer(),
         };
     }
 
     // Una nueva campaña reemplaza a la anterior (último clic)
     if (Object.keys(campaign).length) {
-        WAB_CAMPAIGN_PARAMS.forEach(function (key) {
+        LEADIVO_CAMPAIGN_PARAMS.forEach(function (key) {
             delete attribution[key];
         });
         Object.assign(attribution, campaign);
     }
 
     try {
-        sessionStorage.setItem(WAB_ATTRIBUTION_KEY, JSON.stringify(attribution));
+        sessionStorage.setItem(LEADIVO_ATTRIBUTION_KEY, JSON.stringify(attribution));
     } catch (err) {
         // Almacenamiento no disponible (modo privado, bloqueado): se sigue sin atribución guardada
     }
@@ -60,12 +60,12 @@ function wabCaptureAttribution() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    const config = window.wabConfig || {};
-    const attribution = wabCaptureAttribution();
-    const whatsappButton = document.querySelector(".whatsapp-button");
-    const whatsappPopup = document.querySelector(".whatsapp-popup");
-    const whatsappForm = document.getElementById("whatsapp-form");
-    const closeButton = document.querySelector(".whatsapp-close");
+    const config = window.leadivoConfig || {};
+    const attribution = leadivoCaptureAttribution();
+    const whatsappButton = document.querySelector(".leadivo-button");
+    const whatsappPopup = document.querySelector(".leadivo-popup");
+    const whatsappForm = document.getElementById("leadivo-form");
+    const closeButton = document.querySelector(".leadivo-close");
 
     if (!config.phoneNumber) {
         console.error("Número de WhatsApp no configurado.");
@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // Hora en la burbuja de bienvenida, como en un mensaje recién recibido
-    const bubbleTime = whatsappPopup.querySelector(".wab-bubble-time");
+    const bubbleTime = whatsappPopup.querySelector(".leadivo-bubble-time");
 
     function openPopup() {
         if (bubbleTime) {
@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         whatsappPopup.hidden = false;
         whatsappButton.setAttribute("aria-expanded", "true");
-        document.getElementById("whatsapp-name").focus();
+        document.getElementById("leadivo-name").focus();
     }
 
     function closePopup() {
@@ -109,14 +109,14 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             window.dataLayer = window.dataLayer || [];
             window.dataLayer.push(eventData);
-            document.dispatchEvent(new CustomEvent("wab:lead", { detail: eventData }));
+            document.dispatchEvent(new CustomEvent("leadivo:lead", { detail: eventData }));
         } catch (err) {
             console.error("Error al registrar el evento de WhatsApp:", err);
         }
 
         // Código de seguimiento personalizado (opcional, configurado en el admin)
-        if (typeof window.wabTrack === "function") {
-            window.wabTrack(eventData);
+        if (typeof window.leadivoTrack === "function") {
+            window.leadivoTrack(eventData);
         }
     }
 
@@ -141,12 +141,12 @@ document.addEventListener("DOMContentLoaded", function () {
     whatsappForm.addEventListener("submit", function (e) {
         e.preventDefault();
 
-        const name = document.getElementById("whatsapp-name").value.trim();
-        const emailField = document.getElementById("whatsapp-email");
+        const name = document.getElementById("leadivo-name").value.trim();
+        const emailField = document.getElementById("leadivo-email");
         const email = emailField ? emailField.value.trim() : "";
-        const messageField = document.getElementById("whatsapp-message");
+        const messageField = document.getElementById("leadivo-message");
         const message = messageField ? messageField.value.trim() : "";
-        const phoneField = document.getElementById("whatsapp-phone");
+        const phoneField = document.getElementById("leadivo-phone");
         const phone = phoneField ? phoneField.value.trim() : "";
 
         if (!name || (messageField && !message) || (emailField && !email)) {
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const consentField = document.getElementById("whatsapp-consent");
+        const consentField = document.getElementById("leadivo-consent");
         if (consentField && !consentField.checked) {
             alert("Debes aceptar el tratamiento de datos para continuar.");
             return;
@@ -177,9 +177,9 @@ document.addEventListener("DOMContentLoaded", function () {
         trackLead(message);
 
         const payload = Object.assign({}, attribution, {
-            action: "wab_submit_lead",
+            action: "leadivo_submit_lead",
             nonce: config.nonce,
-            website: document.getElementById("whatsapp-website").value,
+            website: document.getElementById("leadivo-website").value,
             name: name,
             email: email,
             phone: phone,

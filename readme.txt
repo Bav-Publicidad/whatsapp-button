@@ -1,10 +1,10 @@
-=== Chat Lead Button ===
-Contributors: desarrolladorbavit
+=== Leadivo – Lead Chat Button ===
+Contributors: bavit, desarrolladorbavit
 Tags: whatsapp, lead capture, click to chat, contact form, google tag manager
 Requires at least: 5.8
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Floating chat button with a lead form: capture name, email and message before op
 
 == Description ==
 
-Chat Lead Button adds a floating button to your site. When visitors click it, a short form asks for their details before opening a WhatsApp conversation with your business. Every lead is saved and emailed to you, even if the visitor never sends the message.
+Leadivo adds a floating button to your site. When visitors click it, a short form asks for their details before opening a WhatsApp conversation with your business. Every lead is saved and emailed to you, even if the visitor never sends the message.
 
 **Features**
 
@@ -20,7 +20,7 @@ Chat Lead Button adds a floating button to your site. When visitors click it, a 
 * Customizable form title, description and WhatsApp message template with `{name}`, `{email}`, `{phone}` and `{message}` placeholders.
 * Message field as free text or a dropdown with your own options.
 * Email notification with Reply-To set to the lead, traffic source (UTM parameters, gclid, fbclid, msclkid, landing page, referrer), date and device.
-* Every lead is stored in the WordPress admin (Leads menu), even if the email fails, with CSV export.
+* Every lead is stored in the WordPress admin (Leadivo Leads menu), even if the email fails, with CSV export.
 * Google Tag Manager ready: pushes a `whatsapp_lead` event to the `dataLayer` (no personal data).
 * Optional consent checkbox with a link to your privacy policy.
 * Spam protection: nonce, honeypot field and rate limiting per IP.
@@ -31,7 +31,7 @@ This plugin is not affiliated with, endorsed by or sponsored by WhatsApp or Meta
 
 1. Upload the plugin folder to `/wp-content/plugins/` or install it from the Plugins screen.
 2. Activate the plugin.
-3. Go to **Settings → Chat Lead Button** and enter your WhatsApp number with country code (digits only, e.g. `573001234567`).
+3. Go to **Settings → Leadivo** and enter your WhatsApp number with country code (digits only, e.g. `573001234567`).
 4. Adjust the form fields, texts and the email address that receives leads.
 
 == Frequently Asked Questions ==
@@ -42,7 +42,7 @@ Create a **Custom Event** trigger with the event name `whatsapp_lead` and use it
 
 = I don't receive the lead emails =
 
-Delivery depends on your server's email configuration. We recommend an SMTP plugin. Leads are always saved in the admin **Leads** menu, so none are lost.
+Delivery depends on your server's email configuration. We recommend an SMTP plugin. Leads are always saved in the admin **Leadivo Leads** menu, so none are lost.
 
 = Does it work with page caching? =
 
@@ -50,7 +50,7 @@ Yes, but keep the page cache lifespan under 10 hours so the form's security toke
 
 = Are leads deleted when I uninstall the plugin? =
 
-No. Settings are removed, but saved leads are kept on purpose. Delete them from the Leads menu before uninstalling if you want them gone.
+No. Settings are removed, but saved leads are kept on purpose. Delete them from the Leadivo Leads menu before uninstalling if you want them gone.
 
 == External services ==
 
@@ -60,6 +60,12 @@ When a visitor submits the form, the plugin opens a `https://wa.me/` link (a Wha
 * WhatsApp Privacy Policy: https://www.whatsapp.com/legal/privacy-policy
 
 == Changelog ==
+
+= 1.4.0 =
+* New: the message field can be turned off.
+* New: chat-style pop-up design that looks the same with any theme.
+* New: entrance and hover animations (disabled when the visitor prefers reduced motion).
+* Changed: plugin renamed to Leadivo – Lead Chat Button; settings and leads from previous versions are migrated automatically.
 
 = 1.3.0 =
 * New: leads are stored in the admin with CSV export.
@@ -71,6 +77,9 @@ When a visitor submits the form, the plugin opens a `https://wa.me/` link (a Wha
 * Improved: accessibility and mobile layout.
 
 == Upgrade Notice ==
+
+= 1.4.0 =
+Plugin renamed. Settings and saved leads from previous versions are migrated automatically.
 
 = 1.3.0 =
 Leads are now saved in the admin and the form includes a consent checkbox enabled by default.

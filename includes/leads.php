@@ -4,10 +4,10 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-define('WAB_LEAD_POST_TYPE', 'wab_lead');
+define('LEADIVO_LEAD_POST_TYPE', 'leadivo_lead');
 
 // Campos que se guardan de cada lead (clave => etiqueta)
-function whatsapp_button_lead_fields()
+function leadivo_lead_fields()
 {
     return [
         'name'         => 'Nombre',
@@ -33,13 +33,13 @@ function whatsapp_button_lead_fields()
 }
 
 // Tipo de contenido privado: solo visible en el admin para administradores
-function whatsapp_button_register_lead_post_type()
+function leadivo_register_lead_post_type()
 {
-    register_post_type(WAB_LEAD_POST_TYPE, [
+    register_post_type(LEADIVO_LEAD_POST_TYPE, [
         'labels' => [
-            'name'               => 'Chat Leads',
-            'singular_name'      => 'Chat Lead',
-            'menu_name'          => 'Chat Leads',
+            'name'               => 'Leadivo Leads',
+            'singular_name'      => 'Leadivo Lead',
+            'menu_name'          => 'Leadivo Leads',
             'all_items'          => 'Todos los leads',
             'edit_item'          => 'Detalle del lead',
             'search_items'       => 'Buscar leads',
@@ -71,15 +71,15 @@ function whatsapp_button_register_lead_post_type()
         ],
     ]);
 }
-add_action('init', 'whatsapp_button_register_lead_post_type');
+add_action('init', 'leadivo_register_lead_post_type');
 
 // Guardar un lead. Devuelve el ID del post o 0 si falla.
-function whatsapp_button_save_lead(array $lead)
+function leadivo_save_lead(array $lead)
 {
     $contact = $lead['email'] !== '' ? $lead['email'] : $lead['phone'];
 
     $post_id = wp_insert_post([
-        'post_type'   => WAB_LEAD_POST_TYPE,
+        'post_type'   => LEADIVO_LEAD_POST_TYPE,
         'post_status' => 'publish',
         'post_title'  => $contact !== '' ? sprintf('%s <%s>', $lead['name'], $contact) : $lead['name'],
     ], true);
@@ -88,35 +88,35 @@ function whatsapp_button_save_lead(array $lead)
         return 0;
     }
 
-    foreach (array_keys(whatsapp_button_lead_fields()) as $key) {
+    foreach (array_keys(leadivo_lead_fields()) as $key) {
         if (isset($lead[$key]) && $lead[$key] !== '') {
-            update_post_meta($post_id, '_wab_' . $key, $lead[$key]);
+            update_post_meta($post_id, '_leadivo_' . $key, $lead[$key]);
         }
     }
 
     return $post_id;
 }
 
-function whatsapp_button_get_lead_meta($post_id, $key)
+function leadivo_get_lead_meta($post_id, $key)
 {
-    return (string) get_post_meta($post_id, '_wab_' . $key, true);
+    return (string) get_post_meta($post_id, '_leadivo_' . $key, true);
 }
 
 // Resumen del origen: campaña UTM o dominio del referente
-function whatsapp_button_lead_source_summary($post_id)
+function leadivo_lead_source_summary($post_id)
 {
-    $source = whatsapp_button_get_lead_meta($post_id, 'utm_source');
+    $source = leadivo_get_lead_meta($post_id, 'utm_source');
     if ($source !== '') {
-        $medium = whatsapp_button_get_lead_meta($post_id, 'utm_medium');
+        $medium = leadivo_get_lead_meta($post_id, 'utm_medium');
         return $medium !== '' ? "$source / $medium" : $source;
     }
-    if (whatsapp_button_get_lead_meta($post_id, 'gclid') !== '') {
+    if (leadivo_get_lead_meta($post_id, 'gclid') !== '') {
         return 'Google Ads';
     }
-    if (whatsapp_button_get_lead_meta($post_id, 'fbclid') !== '') {
+    if (leadivo_get_lead_meta($post_id, 'fbclid') !== '') {
         return 'Meta';
     }
-    $referrer = whatsapp_button_get_lead_meta($post_id, 'referrer');
+    $referrer = leadivo_get_lead_meta($post_id, 'referrer');
     if ($referrer !== '') {
         return (string) wp_parse_url($referrer, PHP_URL_HOST);
     }
@@ -125,45 +125,45 @@ function whatsapp_button_lead_source_summary($post_id)
 
 /* ---------- Listado en el admin ---------- */
 
-function whatsapp_button_lead_columns()
+function leadivo_lead_columns()
 {
     return [
         'cb'        => '<input type="checkbox" />',
         'title'     => 'Lead',
-        'wab_phone' => 'Teléfono',
-        'wab_msg'   => 'Mensaje',
-        'wab_src'   => 'Origen',
-        'wab_mail'  => 'Correo',
+        'leadivo_phone' => 'Teléfono',
+        'leadivo_msg'   => 'Mensaje',
+        'leadivo_src'   => 'Origen',
+        'leadivo_mail'  => 'Correo',
         'date'      => 'Fecha',
     ];
 }
-add_filter('manage_' . WAB_LEAD_POST_TYPE . '_posts_columns', 'whatsapp_button_lead_columns');
+add_filter('manage_' . LEADIVO_LEAD_POST_TYPE . '_posts_columns', 'leadivo_lead_columns');
 
-function whatsapp_button_lead_column_content($column, $post_id)
+function leadivo_lead_column_content($column, $post_id)
 {
     switch ($column) {
-        case 'wab_phone':
-            echo esc_html(whatsapp_button_get_lead_meta($post_id, 'phone'));
+        case 'leadivo_phone':
+            echo esc_html(leadivo_get_lead_meta($post_id, 'phone'));
             break;
-        case 'wab_msg':
-            echo esc_html(wp_trim_words(whatsapp_button_get_lead_meta($post_id, 'message'), 12));
+        case 'leadivo_msg':
+            echo esc_html(wp_trim_words(leadivo_get_lead_meta($post_id, 'message'), 12));
             break;
-        case 'wab_src':
-            echo esc_html(whatsapp_button_lead_source_summary($post_id));
+        case 'leadivo_src':
+            echo esc_html(leadivo_lead_source_summary($post_id));
             break;
-        case 'wab_mail':
-            echo whatsapp_button_get_lead_meta($post_id, 'mail_sent') === '1'
+        case 'leadivo_mail':
+            echo leadivo_get_lead_meta($post_id, 'mail_sent') === '1'
                 ? '<span style="color:#008a20;">Enviado</span>'
                 : '<span style="color:#d63638;">Falló</span>';
             break;
     }
 }
-add_action('manage_' . WAB_LEAD_POST_TYPE . '_posts_custom_column', 'whatsapp_button_lead_column_content', 10, 2);
+add_action('manage_' . LEADIVO_LEAD_POST_TYPE . '_posts_custom_column', 'leadivo_lead_column_content', 10, 2);
 
 // Sin edición rápida: los leads son de solo lectura
-function whatsapp_button_lead_row_actions($actions, $post)
+function leadivo_lead_row_actions($actions, $post)
 {
-    if ($post->post_type === WAB_LEAD_POST_TYPE) {
+    if ($post->post_type === LEADIVO_LEAD_POST_TYPE) {
         unset($actions['inline hide-if-no-js']);
         if (isset($actions['edit'])) {
             $actions['edit'] = sprintf('<a href="%s">Ver detalle</a>', esc_url(get_edit_post_link($post->ID)));
@@ -171,19 +171,19 @@ function whatsapp_button_lead_row_actions($actions, $post)
     }
     return $actions;
 }
-add_filter('post_row_actions', 'whatsapp_button_lead_row_actions', 10, 2);
+add_filter('post_row_actions', 'leadivo_lead_row_actions', 10, 2);
 
 // La búsqueda del listado también busca en los metadatos
-function whatsapp_button_lead_search($search, $query)
+function leadivo_lead_search($search, $query)
 {
     global $wpdb;
 
-    if (! is_admin() || ! $query->is_main_query() || $query->get('post_type') !== WAB_LEAD_POST_TYPE || $query->get('s') === '') {
+    if (! is_admin() || ! $query->is_main_query() || $query->get('post_type') !== LEADIVO_LEAD_POST_TYPE || $query->get('s') === '') {
         return $search;
     }
 
     $like     = '%' . $wpdb->esc_like($query->get('s')) . '%';
-    $meta_key = $wpdb->esc_like('_wab_') . '%';
+    $meta_key = $wpdb->esc_like('_leadivo_') . '%';
     return $wpdb->prepare(
         " AND ({$wpdb->posts}.post_title LIKE %s OR {$wpdb->posts}.ID IN (SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key LIKE %s AND meta_value LIKE %s))",
         $like,
@@ -191,25 +191,25 @@ function whatsapp_button_lead_search($search, $query)
         $like
     );
 }
-add_filter('posts_search', 'whatsapp_button_lead_search', 10, 2);
+add_filter('posts_search', 'leadivo_lead_search', 10, 2);
 
 /* ---------- Detalle del lead ---------- */
 
-function whatsapp_button_lead_meta_boxes()
+function leadivo_lead_meta_boxes()
 {
-    add_meta_box('wab_lead_details', 'Datos del lead', 'whatsapp_button_lead_details_box', WAB_LEAD_POST_TYPE, 'normal', 'high');
+    add_meta_box('leadivo_lead_details', 'Datos del lead', 'leadivo_lead_details_box', LEADIVO_LEAD_POST_TYPE, 'normal', 'high');
 }
-add_action('add_meta_boxes', 'whatsapp_button_lead_meta_boxes');
+add_action('add_meta_boxes', 'leadivo_lead_meta_boxes');
 
-function whatsapp_button_lead_details_box($post)
+function leadivo_lead_details_box($post)
 {
     $url_fields = ['page_url', 'landing_page', 'referrer'];
 
     echo '<table class="widefat striped"><tbody>';
     echo '<tr><th style="width:180px;">Fecha</th><td>' . esc_html(get_the_date('Y-m-d H:i', $post)) . '</td></tr>';
 
-    foreach (whatsapp_button_lead_fields() as $key => $label) {
-        $value = whatsapp_button_get_lead_meta($post->ID, $key);
+    foreach (leadivo_lead_fields() as $key => $label) {
+        $value = leadivo_get_lead_meta($post->ID, $key);
         if ($key === 'mail_sent') {
             $value = $value === '1' ? 'Sí' : 'No';
         }
@@ -233,29 +233,29 @@ function whatsapp_button_lead_details_box($post)
 
 /* ---------- Exportar CSV ---------- */
 
-function whatsapp_button_lead_export_button($which)
+function leadivo_lead_export_button($which)
 {
     global $typenow;
 
-    if ($typenow !== WAB_LEAD_POST_TYPE || $which !== 'top') {
+    if ($typenow !== LEADIVO_LEAD_POST_TYPE || $which !== 'top') {
         return;
     }
 
-    $url = wp_nonce_url(admin_url('admin-post.php?action=wab_export_leads'), 'wab_export_leads');
+    $url = wp_nonce_url(admin_url('admin-post.php?action=leadivo_export_leads'), 'leadivo_export_leads');
     echo '<div class="alignleft actions"><a href="' . esc_url($url) . '" class="button">Exportar CSV</a></div>';
 }
-add_action('manage_posts_extra_tablenav', 'whatsapp_button_lead_export_button');
+add_action('manage_posts_extra_tablenav', 'leadivo_lead_export_button');
 
-function whatsapp_button_export_leads()
+function leadivo_export_leads()
 {
     if (! current_user_can('manage_options')) {
         wp_die('No tienes permisos para exportar leads.', 403);
     }
-    check_admin_referer('wab_export_leads');
+    check_admin_referer('leadivo_export_leads');
 
-    $fields = whatsapp_button_lead_fields();
+    $fields = leadivo_lead_fields();
     $ids    = get_posts([
-        'post_type'      => WAB_LEAD_POST_TYPE,
+        'post_type'      => LEADIVO_LEAD_POST_TYPE,
         'post_status'    => 'publish',
         'posts_per_page' => -1,
         'fields'         => 'ids',
@@ -263,7 +263,7 @@ function whatsapp_button_export_leads()
 
     nocache_headers();
     header('Content-Type: text/csv; charset=UTF-8');
-    header('Content-Disposition: attachment; filename="leads-whatsapp-' . wp_date('Y-m-d') . '.csv"');
+    header('Content-Disposition: attachment; filename="leads-leadivo-' . wp_date('Y-m-d') . '.csv"');
 
     echo "\xEF\xBB\xBF"; // BOM para que Excel reconozca UTF-8
 
@@ -275,7 +275,7 @@ function whatsapp_button_export_leads()
     foreach ($ids as $id) {
         $row = [get_the_date('Y-m-d H:i', $id)];
         foreach (array_keys($fields) as $key) {
-            $value = whatsapp_button_get_lead_meta($id, $key);
+            $value = leadivo_get_lead_meta($id, $key);
             // Evita inyección de fórmulas al abrir el CSV en Excel
             if ($value !== '' && in_array($value[0], ['=', '+', '-', '@'], true)) {
                 $value = "'" . $value;
@@ -287,4 +287,4 @@ function whatsapp_button_export_leads()
 
     exit;
 }
-add_action('admin_post_wab_export_leads', 'whatsapp_button_export_leads');
+add_action('admin_post_leadivo_export_leads', 'leadivo_export_leads');

@@ -4,13 +4,13 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-define('WAB_RATE_LIMIT_MAX', 5);                  // Envíos permitidos por IP...
-define('WAB_RATE_LIMIT_WINDOW', 10 * MINUTE_IN_SECONDS); // ...en esta ventana de tiempo
+define('LEADIVO_RATE_LIMIT_MAX', 5);                  // Envíos permitidos por IP...
+define('LEADIVO_RATE_LIMIT_WINDOW', 10 * MINUTE_IN_SECONDS); // ...en esta ventana de tiempo
 
 // Recibir el lead del formulario (usuarios con y sin sesión)
-function whatsapp_button_handle_lead()
+function leadivo_handle_lead()
 {
-    if (! check_ajax_referer('wab_submit_lead', 'nonce', false)) {
+    if (! check_ajax_referer('leadivo_submit_lead', 'nonce', false)) {
         wp_send_json_error(['error' => 'La sesión expiró. Recarga la página e inténtalo de nuevo.'], 403);
     }
 
@@ -20,20 +20,20 @@ function whatsapp_button_handle_lead()
         wp_send_json_success();
     }
 
-    if (whatsapp_button_is_rate_limited()) {
+    if (leadivo_is_rate_limited()) {
         wp_send_json_error(['error' => 'Demasiados envíos. Inténtalo de nuevo en unos minutos.'], 429);
     }
 
-    // Nonce ya verificado arriba; cada campo se sanitiza en whatsapp_button_sanitize_lead().
+    // Nonce ya verificado arriba; cada campo se sanitiza en leadivo_sanitize_lead().
     // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-    $lead = whatsapp_button_sanitize_lead(wp_unslash($_POST));
+    $lead = leadivo_sanitize_lead(wp_unslash($_POST));
 
     if ($lead['name'] === '') {
         wp_send_json_error(['error' => 'Datos incompletos.'], 400);
     }
 
     // El mensaje solo es obligatorio si el campo está activo en los ajustes
-    if (whatsapp_button_message_enabled()) {
+    if (leadivo_message_enabled()) {
         if ($lead['message'] === '') {
             wp_send_json_error(['error' => 'Datos incompletos.'], 400);
         }
@@ -42,7 +42,7 @@ function whatsapp_button_handle_lead()
     }
 
     // El email solo es obligatorio si el campo está activo en los ajustes
-    if (whatsapp_button_email_enabled()) {
+    if (leadivo_email_enabled()) {
         if (! is_email($lead['email'])) {
             wp_send_json_error(['error' => 'Email no válido.'], 400);
         }
@@ -51,22 +51,22 @@ function whatsapp_button_handle_lead()
     }
 
     // Si el mensaje es un select, solo se aceptan las opciones configuradas
-    if (whatsapp_button_message_enabled()
-        && get_option('whatsapp_message_field_type', 'text') === 'select'
-        && ! in_array($lead['message'], whatsapp_button_get_select_options(), true)) {
+    if (leadivo_message_enabled()
+        && get_option('leadivo_message_field_type', 'text') === 'select'
+        && ! in_array($lead['message'], leadivo_get_select_options(), true)) {
         wp_send_json_error(['error' => 'Opción no válida.'], 400);
     }
 
-    if (whatsapp_button_consent_enabled() && $lead['consent'] !== 'Sí') {
+    if (leadivo_consent_enabled() && $lead['consent'] !== 'Sí') {
         wp_send_json_error(['error' => 'Debes aceptar el tratamiento de datos.'], 400);
     }
 
     // Se guarda primero en la BD: si el correo falla, el lead no se pierde
-    $lead_id   = whatsapp_button_save_lead($lead);
-    $mail_sent = whatsapp_button_send_lead_email($lead);
+    $lead_id   = leadivo_save_lead($lead);
+    $mail_sent = leadivo_send_lead_email($lead);
 
     if ($lead_id) {
-        update_post_meta($lead_id, '_wab_mail_sent', $mail_sent ? '1' : '0');
+        update_post_meta($lead_id, '_leadivo_mail_sent', $mail_sent ? '1' : '0');
     }
 
     if (! $lead_id && ! $mail_sent) {
@@ -77,7 +77,7 @@ function whatsapp_button_handle_lead()
 }
 
 // Sanitizar los datos enviados por el formulario (ya sin barras: wp_unslash)
-function whatsapp_button_sanitize_lead(array $data)
+function leadivo_sanitize_lead(array $data)
 {
     $raw = function ($key) use ($data) {
         return isset($data[$key]) && is_string($data[$key]) ? $data[$key] : '';
@@ -113,10 +113,10 @@ function whatsapp_button_sanitize_lead(array $data)
 }
 
 // Enviar el lead por correo
-function whatsapp_button_send_lead_email(array $lead)
+function leadivo_send_lead_email(array $lead)
 {
     // Obtener correo de destino desde las opciones del plugin
-    $admin_email = get_option('whatsapp_lead_email');
+    $admin_email = get_option('leadivo_lead_email');
     if (! $admin_email || ! is_email($admin_email)) {
         $admin_email = get_option('admin_email'); // fallback al admin general de WP
     }
@@ -183,24 +183,24 @@ function whatsapp_button_send_lead_email(array $lead)
 
     return wp_mail($admin_email, $subject, implode("\n", $lines), $headers);
 }
-add_action('wp_ajax_wab_submit_lead', 'whatsapp_button_handle_lead');
-add_action('wp_ajax_nopriv_wab_submit_lead', 'whatsapp_button_handle_lead');
+add_action('wp_ajax_leadivo_submit_lead', 'leadivo_handle_lead');
+add_action('wp_ajax_nopriv_leadivo_submit_lead', 'leadivo_handle_lead');
 
 // Límite simple de envíos por IP usando transients
-function whatsapp_button_is_rate_limited()
+function leadivo_is_rate_limited()
 {
     $ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field(wp_unslash($_SERVER['REMOTE_ADDR'])) : '';
     if ($ip === '') {
         return false;
     }
 
-    $key   = 'wab_rl_' . md5($ip);
+    $key   = 'leadivo_rl_' . md5($ip);
     $count = (int) get_transient($key);
 
-    if ($count >= WAB_RATE_LIMIT_MAX) {
+    if ($count >= LEADIVO_RATE_LIMIT_MAX) {
         return true;
     }
 
-    set_transient($key, $count + 1, WAB_RATE_LIMIT_WINDOW);
+    set_transient($key, $count + 1, LEADIVO_RATE_LIMIT_WINDOW);
     return false;
 }
